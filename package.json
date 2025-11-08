@@ -1,0 +1,17 @@
+{
+  "name": "ascend-craving-companion",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:backend": "cross-env PORT=4000 npm run dev --prefix backend",
+    "dev:frontend": "cross-env VITE_HOST=127.0.0.1 npm run dev --prefix frontend",
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "build:backend": "npm run build --prefix backend",
+    "build:frontend": "npm run build --prefix frontend",
+    "format": "npm run format --if-present --prefix frontend && npm run format --if-present --prefix backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1",
+    "cross-env": "^10.1.0"
+  }
+}
