@@ -15,7 +15,9 @@
       "improvNotes": [
         "Keep responses short and grounding.",
         "Affirm that needing help is expected and a step toward freedom."
-      ]
+      ],
+      "llmProvider": "openai",
+      "llmModel": "gpt-4o-mini"
     },
     "relief": {
       "intent": "Guide the user through breathing, visualization, and reframing to reduce craving intensity.",
@@ -33,7 +35,9 @@
         "Deliver instructions one at a time.",
         "Celebrate even small drops in intensity.",
         "Avoid any mention of willpower or fighting through the craving." 
-      ]
+      ],
+      "llmProvider": "openai",
+      "llmModel": "gpt-4o-mini"
     },
     "reflection": {
       "intent": "Spark curiosity about why cravings appear and how nicotine maintains them.",
@@ -49,7 +53,9 @@
       "improvNotes": [
         "Honor a user’s choice to skip and move toward the teaser stage gracefully.",
         "Keep explanations short and grounded in everyday language." 
-      ]
+      ],
+      "llmProvider": "openai",
+      "llmModel": "gpt-4o"
     },
     "teaser": {
       "intent": "Paint a vision of life without cravings and connect to the Freedom Journey offer.",
@@ -65,7 +71,9 @@
       "improvNotes": [
         "Keep momentum gentle and encouraging, never pushy.",
         "Link the teaser back to the win they just experienced." 
-      ]
+      ],
+      "llmProvider": "openai",
+      "llmModel": "gpt-4o-mini"
     },
     "conversion": {
       "intent": "Guide the user toward checkout or waitlist while reinforcing value.",
@@ -81,7 +89,9 @@
       "improvNotes": [
         "Keep the offer clear: 6 guided conversations based on the Easy Way method.",
         "Celebrate their progress and close with an open invitation to come back." 
-      ]
+      ],
+      "llmProvider": "openai",
+      "llmModel": "gpt-4o-mini"
     }
   }
 }

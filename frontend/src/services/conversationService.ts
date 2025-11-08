@@ -16,14 +16,16 @@ export interface ConversationResponse {
   messages: string[];
   followUpQuestions?: string[];
   nextStage?: StageKey;
+  source: 'llm' | 'script';
 }
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:4000/api';
+const SHOULD_MOCK_CONVERSATION = import.meta.env.VITE_USE_CONVERSATION_MOCK === 'true';
 
 export async function sendConversation(
   payload: ConversationPayload
 ): Promise<ConversationResponse> {
-  if (import.meta.env.DEV) {
+  if (SHOULD_MOCK_CONVERSATION) {
     const nextStage = getNextStage(payload.stage) ?? undefined;
     return {
       stage: payload.stage,
@@ -32,7 +34,8 @@ export async function sendConversation(
         `You said: "${payload.userInput}"`
       ],
       followUpQuestions: ['What shifted for you during that last moment?'],
-      nextStage
+      nextStage,
+      source: 'script'
     };
   }
 

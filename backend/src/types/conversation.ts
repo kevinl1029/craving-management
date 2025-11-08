@@ -15,4 +15,5 @@ export interface ConversationResponse {
   messages: string[];
   followUpQuestions?: string[];
   nextStage?: StageKey;
+  source: 'llm' | 'script';
 }

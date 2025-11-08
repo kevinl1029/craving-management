@@ -5,6 +5,7 @@ const schema = z.object({
   PORT: z.string().default('4000'),
   OPENAI_API_KEY: z.string().optional(),
   LLM_PROVIDER: z.string().optional(),
+  LLM_DEFAULT_MODEL: z.string().optional(),
   SUPABASE_URL: z.string().url().optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
   STRIPE_SECRET_KEY: z.string().optional()
@@ -23,6 +24,7 @@ export const appConfig = {
   port: Number(env.PORT) || 4000,
   openAiApiKey: env.OPENAI_API_KEY,
   llmProvider: env.LLM_PROVIDER ?? 'openai',
+  llmDefaultModel: env.LLM_DEFAULT_MODEL ?? 'gpt-4o-mini',
   supabaseUrl: env.SUPABASE_URL,
   supabaseServiceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY,
   stripeSecretKey: env.STRIPE_SECRET_KEY

@@ -6,6 +6,8 @@ export interface StageScript {
   coachMessages: string[];
   userPrompts: string[];
   improvNotes: string[];
+  llmProvider?: string;
+  llmModel?: string;
 }
 
 export interface AdaptiveScriptConfig {
