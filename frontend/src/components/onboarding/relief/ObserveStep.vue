@@ -1,8 +1,6 @@
 <template>
   <div class="observe-wrapper">
-    <div class="observe-bg"></div>
-
-    <div class="observe-hud">
+    <div class="observe-hud" :class="{ 'observe-hud--visible': hudVisible }">
       <span class="observe-hud-label">craving intensity</span>
       <span class="observe-hud-value">{{ percentLeft }}%</span>
     </div>
@@ -13,17 +11,11 @@
           class="observe-orb-layer"
           :style="{
             transform: `translateY(${currentOffset}px) scale(${currentScale})`,
-            transition: 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), filter 1.5s ease-out',
+            transition: animationsStarted ? 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), filter 1.5s ease-out' : 'none',
             filter: `drop-shadow(0 0 ${18 * currentScale}px rgba(255, 255, 255, 0.35))`
           }"
         >
           <div class="observe-orb"></div>
-          <div
-            v-for="r in activeRipples"
-            :key="r.id"
-            class="observe-ripple"
-            :style="{ '--ripple-scale': r.scale }"
-          ></div>
         </div>
       </template>
 
@@ -47,27 +39,22 @@ const emit = defineEmits<{
   (e: 'complete'): void;
 }>();
 
-const cycleMs = 3000;
-const maxCycles = 10;
-const startingBaseScale = 1;
+const cycleMs = 5000;
+const maxCycles = 6;
+const startingBaseScale = 1.35;
 const endingBaseScale = 0.5;
 const initialAmplitude = 0.35;
 const bobPixels = 6;
-
-type Ripple = {
-  id: number;
-  scale: number;
-};
 
 const currentScale = ref(startingBaseScale);
 const currentOffset = ref(0);
 const currentCycle = ref(0);
 const instruction = ref('Watch the craving swell and then settle…');
-const activeRipples = ref<Ripple[]>([]);
-const percentLeft = ref(100);
+const percentLeft = ref(135);
+const animationsStarted = ref(false);
+const hudVisible = ref(false);
 
 let timer: ReturnType<typeof setTimeout> | null = null;
-let rippleId = 0;
 let finished = false;
 
 const getBaseScaleForCycle = (cycle: number) => {
@@ -85,7 +72,7 @@ const runCycle = () => {
       currentScale.value = endingBaseScale;
       currentOffset.value = 0;
       percentLeft.value = Math.round(endingBaseScale * 100);
-      setTimeout(() => emit('complete'), 1500);
+      setTimeout(() => emit('complete'), 2500);
     }
     return;
   }
@@ -96,30 +83,20 @@ const runCycle = () => {
 
   percentLeft.value = Math.round(baseScale * 100);
 
-  currentScale.value = baseScale + thisAmplitude;
-  currentOffset.value = -bobPixels * amplitudeDecay;
-
-  const thisRippleId = rippleId++;
-  activeRipples.value.push({
-    id: thisRippleId,
-    scale: 1.4 + 0.4 * amplitudeDecay
-  });
+  currentScale.value = baseScale;
+  currentOffset.value = 0;
 
   window.setTimeout(() => {
-    activeRipples.value = activeRipples.value.filter((r) => r.id !== thisRippleId);
-  }, 1500);
-
-  window.setTimeout(() => {
-    currentScale.value = baseScale;
-    currentOffset.value = 0;
+    currentScale.value = baseScale - thisAmplitude;
+    currentOffset.value = bobPixels * amplitudeDecay;
   }, cycleMs / 2);
 
-  if (cycle === 2) {
+  if (cycle === 1) {
     instruction.value = 'See how each wave lands smaller than the last.';
+  } else if (cycle === 3) {
+    instruction.value = "You're just watching it lose power.";
   } else if (cycle === 5) {
-    instruction.value = 'You’re just watching it lose power.';
-  } else if (cycle === 8) {
-    instruction.value = 'Now it’s almost gone.';
+    instruction.value = "Now it's almost gone.";
   }
 
   currentCycle.value = cycle + 1;
@@ -127,7 +104,16 @@ const runCycle = () => {
 };
 
 onMounted(() => {
-  runCycle();
+  // Fade in HUD after a brief delay
+  window.setTimeout(() => {
+    hudVisible.value = true;
+  }, 200);
+
+  // Delay 1 second before starting pulsing to let user adjust
+  window.setTimeout(() => {
+    animationsStarted.value = true;
+    runCycle();
+  }, 1000);
 });
 
 onBeforeUnmount(() => {
@@ -143,18 +129,10 @@ onBeforeUnmount(() => {
   width: 100%;
   position: relative;
   overflow: hidden;
-  background: none;
-}
-
-.observe-bg {
-  position: absolute;
-  inset: 0;
-  background: none;
 }
 
 .observe-content {
   position: relative;
-  z-index: 2;
   width: 100%;
 }
 
@@ -183,15 +161,6 @@ onBeforeUnmount(() => {
   box-shadow: 0 0 40px rgba(255, 255, 255, 0.35), inset 0 0 30px rgba(255, 255, 255, 0.35);
 }
 
-.observe-ripple {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  pointer-events: none;
-  animation: ripple 1.5s ease-out forwards;
-}
-
 .observe-hint {
   margin-top: 1rem;
   color: rgba(255, 255, 255, 0.7);
@@ -211,6 +180,12 @@ onBeforeUnmount(() => {
   align-items: center;
   z-index: 20;
   backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 800ms ease-out;
+}
+
+.observe-hud--visible {
+  opacity: 1;
 }
 
 .observe-hud-label {
@@ -224,16 +199,5 @@ onBeforeUnmount(() => {
   font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
-}
-
-@keyframes ripple {
-  0% {
-    transform: scale(1);
-    opacity: 0.85;
-  }
-  100% {
-    transform: scale(var(--ripple-scale, 1.5));
-    opacity: 0;
-  }
 }
 </style>

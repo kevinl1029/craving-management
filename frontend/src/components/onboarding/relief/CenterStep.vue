@@ -7,18 +7,14 @@ const emit = defineEmits<{
   (e: 'complete'): void;
 }>();
 
-const breathPhase = ref<'inhale' | 'exhale'>('inhale');
+const breathPhase = ref<'inhale' | 'exhale'>('exhale');
 const breathCycle = ref(0);
-const waves = ref<Array<{ id: number }>>([]);
 const isComplete = ref(false);
 const introPhase = ref<'preface' | 'breathe'>('preface');
 const gradientVisible = ref(false);
 const introTextVisible = ref(false);
 const orbVisible = ref(false);
-
-let waveIdCounter = 0;
 let phaseTimer: ReturnType<typeof setTimeout> | null = null;
-let waveInterval: ReturnType<typeof setInterval> | null = null;
 let introTimer: ReturnType<typeof setTimeout> | null = null;
 let gradientTimer: ReturnType<typeof setTimeout> | null = null;
 let orbTimer: ReturnType<typeof setTimeout> | null = null;
@@ -26,18 +22,23 @@ let introPhaseTimer: ReturnType<typeof setTimeout> | null = null;
 let breathingStartTimer: ReturnType<typeof setTimeout> | null = null;
 
 const runBreathingCycle = () => {
-  if (breathCycle.value >= 3) {
-    if (!isComplete.value) {
-      isComplete.value = true;
-      setTimeout(() => emit('complete'), 1200);
-    }
-    return;
-  }
-
   const phaseDurations: Record<typeof breathPhase.value, number> = {
     inhale: 5000,
     exhale: 5000
   };
+
+  // Complete after 3.5 cycles (end on final inhale at scale 1.35)
+  if (breathCycle.value >= 3 && breathPhase.value === 'inhale') {
+    // Stay on inhale (scale 1.35) and complete after full 5s inhale
+    if (!isComplete.value) {
+      isComplete.value = true;
+      setTimeout(() => emit('complete'), 5000);
+    }
+    return;
+  }
+
+  // For the very first transition, move immediately from exhale to inhale
+  const delay = breathCycle.value === 0 && breathPhase.value === 'exhale' ? 0 : phaseDurations[breathPhase.value];
 
   phaseTimer = setTimeout(() => {
     if (breathPhase.value === 'inhale') {
@@ -46,7 +47,7 @@ const runBreathingCycle = () => {
       breathPhase.value = 'inhale';
       breathCycle.value++;
     }
-  }, phaseDurations[breathPhase.value]);
+  }, delay);
 };
 
 watch([breathPhase, breathCycle], () => {
@@ -55,15 +56,6 @@ watch([breathPhase, breathCycle], () => {
   }
   runBreathingCycle();
 });
-
-const createWave = () => {
-  const wave = { id: waveIdCounter++ };
-  waves.value.push(wave);
-
-  setTimeout(() => {
-    waves.value = waves.value.filter((w) => w.id !== wave.id);
-  }, 3000);
-};
 
 const getInstructionText = () => {
   switch (breathPhase.value) {
@@ -91,17 +83,12 @@ onMounted(() => {
 
   breathingStartTimer = setTimeout(() => {
     runBreathingCycle();
-    createWave();
-    waveInterval = setInterval(createWave, 1400);
   }, 5200);
 });
 
 onUnmounted(() => {
   if (phaseTimer) {
     clearTimeout(phaseTimer);
-  }
-  if (waveInterval) {
-    clearInterval(waveInterval);
   }
   if (introTimer) {
     clearTimeout(introTimer);
@@ -123,21 +110,12 @@ onUnmounted(() => {
 
 <template>
   <div class="center-stage">
-    <div class="background-base"></div>
-
     <StageShell>
       <template #visual>
         <div class="visual" :class="{ 'visual--visible': orbVisible }">
           <div class="visual-inner" :class="`phase-${breathPhase}`">
-            <div class="waves-container">
-              <div v-for="wave in waves" :key="wave.id" class="wave-ring"></div>
-            </div>
-
             <div class="orb-container">
-              <div class="orb">
-                <div class="orb-glow"></div>
-                <div class="orb-core"></div>
-              </div>
+              <div class="orb"></div>
             </div>
           </div>
         </div>
@@ -167,21 +145,6 @@ onUnmounted(() => {
   min-height: 100vh;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
-}
-
-
-.background-base,
-.gradient-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.background-base {
-  background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
 }
 
 
@@ -206,48 +169,20 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 5s ease-in-out;
+  transition: transform 5s ease-in-out, filter 5s ease-in-out;
 }
 
 .visual-inner.phase-inhale {
-  transform: scale(1.05);
+  transform: scale(1.35);
+  filter: drop-shadow(0 0 24.3px rgba(255, 255, 255, 0.35));
 }
 
 .visual-inner.phase-exhale {
-  transform: scale(0.95);
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 20.7px rgba(255, 255, 255, 0.35));
 }
 
 
-.wave-ring {
-  position: absolute;
-  inset: 0;
-  margin: auto;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  transform: scale(0.35);
-  transform-origin: center;
-  animation: wave-expand 3s ease-out forwards;
-}
-
-@keyframes wave-expand {
-  0% {
-    transform: scale(0.35);
-    opacity: 1;
-    border-width: 2px;
-  }
-  60% {
-    transform: scale(0.85);
-    opacity: 0.4;
-    border-width: 1px;
-  }
-  100% {
-    transform: scale(1.4);
-    opacity: 0;
-    border-width: 0.5px;
-  }
-}
 
 .orb-container {
   position: relative;
@@ -255,27 +190,19 @@ onUnmounted(() => {
   height: 100%;
 }
 
-.waves-container {
+
+.orb {
   position: absolute;
   inset: 0;
-  pointer-events: none;
-}
-
-
-.orb-glow {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 70%);
-}
-
-.orb-core {
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.3) 70%);
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.4);
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.18) 55%,
+    rgba(74, 157, 168, 0.2) 90%
+  );
+  backdrop-filter: blur(18px);
+  box-shadow: 0 0 40px rgba(255, 255, 255, 0.35), inset 0 0 30px rgba(255, 255, 255, 0.35);
 }
 
 .instruction-container {
@@ -308,29 +235,10 @@ onUnmounted(() => {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  transition: opacity 2s ease-out;
 }
 
-.orb {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.visual-inner.phase-inhale {
-  transform: scale(1.05);
-}
-
-.visual-inner.phase-exhale {
-  transform: scale(0.95);
-}
-
-.waves-container {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+.waves-container--fading {
+  opacity: 0;
 }
 </style>

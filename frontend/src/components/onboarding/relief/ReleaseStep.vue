@@ -1,11 +1,9 @@
 <template>
   <div class="release-wrapper">
-    <div :style="bgStyle"></div>
-
     <StageShell class="release-content">
       <template #visual>
         <div class="release-visual">
-          <div class="release-orb-wrapper" v-if="orbOpacity > 0.02">
+          <div class="release-orb-wrapper" v-if="orbOpacity > 0.02" :style="orbWrapperStyle">
             <div :style="orbStyle"></div>
             <div
               v-for="r in ripples"
@@ -54,38 +52,26 @@ const ripples = ref<Ripple[]>([]);
 const particles = ref<Particle[]>([]);
 const instruction = ref('Let each breath carry tension away.');
 const cycleProgress = ref(0);
+const animationsStarted = ref(false);
 
 let timerRef: ReturnType<typeof setTimeout> | null = null;
 let rippleId = 0;
 let particleId = 0;
 let completed = false;
 
-const bgStyle = computed(() => ({
-  position: 'absolute',
-  inset: 0,
-  background: 'radial-gradient(circle at top, #104e54 0%, #041f21 100%)',
-  transition: 'filter 2s ease',
-  filter: `brightness(${1 + cycleProgress.value * 0.12})`
-}));
-
 const orbScale = computed(() => {
-  const start = 0.55;
+  const start = 0.5;
   const end = 0;
   return start + (end - start) * cycleProgress.value;
 });
 
 const orbOpacity = computed(() => 1 - cycleProgress.value);
 
-const orbLayerStyle = computed(() => ({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  width: '13rem',
-  height: '13rem',
-  transform: `translate(-50%, -50%) scale(${orbScale.value})`,
+const orbWrapperStyle = computed(() => ({
+  transform: `scale(${orbScale.value})`,
   opacity: orbOpacity.value,
-  transition: 'transform 2s ease, opacity 2s ease',
-  zIndex: 10
+  filter: `drop-shadow(0 0 ${18 * orbScale.value}px rgba(255, 255, 255, 0.35))`,
+  transition: animationsStarted.value ? 'transform 2s ease, opacity 2s ease, filter 2s ease' : 'none'
 }));
 
 const orbStyle = computed(() => ({
@@ -167,7 +153,11 @@ const runCycle = (current = 0) => {
 };
 
 onMounted(() => {
-  runCycle(0);
+  // Brief delay before enabling transitions and starting fade
+  window.setTimeout(() => {
+    animationsStarted.value = true;
+    runCycle(0);
+  }, 100);
 });
 
 onBeforeUnmount(() => {
@@ -181,12 +171,10 @@ onBeforeUnmount(() => {
   width: 100%;
   position: relative;
   overflow: hidden;
-  background: none;
 }
 
 .release-content {
   position: relative;
-  z-index: 2;
   width: 100%;
 }
 
