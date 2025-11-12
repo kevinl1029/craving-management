@@ -5,12 +5,6 @@
         <div class="release-visual">
           <div class="release-orb-wrapper" v-if="orbOpacity > 0.02" :style="orbWrapperStyle">
             <div :style="orbStyle"></div>
-            <div
-              v-for="r in ripples"
-              :key="r.id"
-              class="release-ripple"
-              :style="getRippleStyle(r)"
-            ></div>
           </div>
 
           <div
@@ -42,22 +36,32 @@ const emit = defineEmits<{
   (e: 'complete'): void;
 }>();
 
-type Ripple = { id: number; scale: number };
-type Particle = { id: number; x: number; size: number; dur: number };
+type Particle = {
+  id: number;
+  x: number;
+  y: number;
+  endX: number;
+  endY: number;
+  size: number;
+  dur: number;
+  opacity: number;
+  active: boolean;
+};
 
 const cycleMs = 3000;
 const totalCycles = 8;
 
-const ripples = ref<Ripple[]>([]);
 const particles = ref<Particle[]>([]);
 const instruction = ref('Let each breath carry tension away.');
 const cycleProgress = ref(0);
 const animationsStarted = ref(false);
 
 let timerRef: ReturnType<typeof setTimeout> | null = null;
-let rippleId = 0;
 let particleId = 0;
 let completed = false;
+
+// Approximate visual size in pixels (midpoint of clamp range)
+const VISUAL_SIZE_PX = 240; // clamp(12rem, 40vw, 18rem) ≈ 15rem = 240px
 
 const orbScale = computed(() => {
   const start = 0.5;
@@ -84,46 +88,66 @@ const orbStyle = computed(() => ({
   boxShadow: '0 0 40px rgba(255,255,255,0.35), inset 0 0 30px rgba(255,255,255,0.35)'
 }));
 
-const getRippleStyle = (r: Ripple) => ({
-  position: 'absolute',
-  inset: 0,
-  borderRadius: '9999px',
-  border: '1px solid rgba(255,255,255,0.35)',
-  pointerEvents: 'none',
-  animation: 'ripple 1.5s ease-out forwards',
-  '--ripple-scale': r.scale
-});
-
 const getParticleStyle = (p: Particle) => ({
   position: 'absolute',
-  top: '48%',
-  left: `calc(50% + ${p.x}px)`,
+  left: '50%',
+  top: '50%',
   width: `${p.size}px`,
   height: `${p.size}px`,
-  background: 'rgba(236,252,255,0.7)',
+  background: `rgba(236, 252, 255, ${p.opacity})`,
   borderRadius: '9999px',
-  animationName: 'particle-fall',
-  animationTimingFunction: 'ease-out',
-  animationDuration: `${p.dur}ms`,
+  transform: `translate(${p.x}px, ${p.y}px)`,
+  opacity: p.active ? 0 : p.opacity,
+  transition: `transform ${p.dur}ms ease-out, opacity ${p.dur}ms linear`,
   zIndex: 5,
   pointerEvents: 'none'
 });
 
-const addRipple = (scale = 1.5) => {
-  const id = rippleId++;
-  ripples.value.push({ id, scale });
-  setTimeout(() => {
-    ripples.value = ripples.value.filter((r) => r.id !== id);
-  }, 1600);
-};
+const addParticles = (count: number) => {
+  const currentRadius = (VISUAL_SIZE_PX / 2) * orbScale.value;
 
-const addParticles = (count = 5) => {
   for (let i = 0; i < count; i++) {
     const id = particleId++;
-    const x = (Math.random() - 0.5) * 80;
-    const size = 2.5 + Math.random() * 2;
-    const dur = 1800 + Math.random() * 900;
-    particles.value.push({ id, x, size, dur });
+
+    // Random angle around orb circumference
+    const angle = Math.random() * Math.PI * 2;
+
+    // Start position: on orb edge
+    const startX = Math.cos(angle) * currentRadius;
+    const startY = Math.sin(angle) * currentRadius;
+
+    // Initial velocity components
+    const speedMultiplier = 0.2 + Math.random() * 0.8; // Vary particle speeds
+    const velocityX = Math.cos(angle) * speedMultiplier * 120; // px/s outward
+    const velocityY = -20 + Math.random() * 30; // Slightly upward to downward
+
+    // Physics calculation
+    const dur = 1500 + Math.random() * 800; // ms
+    const t = dur / 1000; // Convert to seconds
+    const gravity = 280; // px/s²
+
+    const endX = startX + velocityX * t;
+    const endY = startY + velocityY * t + 0.5 * gravity * t * t; // Parabolic arc
+
+    // Particle properties
+    const size = 2 + Math.random() * 4; // 2-6px
+    const opacity = 0.6 + Math.random() * 0.2; // 0.6-0.8
+
+    // Initialize at start position
+    particles.value.push({ id, x: startX, y: startY, endX, endY, size, dur, opacity, active: false });
+
+    // Trigger animation after browser paint (double rAF ensures initial state is painted)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const particle = particles.value.find((p) => p.id === id);
+        if (particle) {
+          particle.x = endX;
+          particle.y = endY;
+          particle.active = true;
+        }
+      });
+    });
+
     setTimeout(() => {
       particles.value = particles.value.filter((p) => p.id !== id);
     }, dur);
@@ -140,8 +164,9 @@ const runCycle = (current = 0) => {
     return;
   }
 
-  addRipple(1.5 + next * 0.05);
-  addParticles(6 + next);
+  // Increase particle count as orb shrinks (creates "frantic" dissolution effect)
+  const particleCount = 8 + next * 2; // 10, 12, 14, 16, 18, 20, 22, 24
+  addParticles(particleCount);
   cycleProgress.value = next / totalCycles;
 
   if (next === 2) instruction.value = 'Feel gravity drawing it down.';
@@ -187,26 +212,5 @@ onBeforeUnmount(() => {
 .release-orb-wrapper {
   position: absolute;
   inset: 0;
-}
-@keyframes ripple {
-  0% {
-    transform: scale(1);
-    opacity: 0.9;
-  }
-  100% {
-    transform: scale(var(--ripple-scale, 1.5)) translateY(35px);
-    opacity: 0;
-  }
-}
-
-@keyframes particle-fall {
-  0% {
-    transform: translateY(0px);
-    opacity: 0.8;
-  }
-  100% {
-    transform: translateY(160px);
-    opacity: 0;
-  }
 }
 </style>
