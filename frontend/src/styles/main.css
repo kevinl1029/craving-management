@@ -1,4 +1,5 @@
 :root {
+  --visual-size: clamp(12rem, 40vw, 18rem);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -13,4 +14,10 @@ body {
 button {
   font-family: inherit;
   cursor: pointer;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }

@@ -14,7 +14,6 @@ export interface ConversationPayload {
 export interface ConversationResponse {
   stage: StageKey;
   messages: string[];
-  followUpQuestions?: string[];
   nextStage?: StageKey;
   source: 'llm' | 'script';
 }
@@ -33,7 +32,6 @@ export async function sendConversation(
         'This is a mock response from the Ascend Freedom Coach.',
         `You said: "${payload.userInput}"`
       ],
-      followUpQuestions: ['What shifted for you during that last moment?'],
       nextStage,
       source: 'script'
     };

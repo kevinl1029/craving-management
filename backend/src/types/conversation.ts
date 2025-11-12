@@ -13,7 +13,6 @@ export interface ConversationRequestBody {
 export interface ConversationResponse {
   stage: StageKey;
   messages: string[];
-  followUpQuestions?: string[];
   nextStage?: StageKey;
   source: 'llm' | 'script';
 }

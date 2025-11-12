@@ -20,25 +20,103 @@
       "llmModel": "gpt-4o-mini"
     },
     "relief": {
-      "intent": "Guide the user through breathing, visualization, and reframing to reduce craving intensity.",
-      "tone": "Soothing, steady, encouraging.",
-      "coachMessages": [
-        "Let’s take one slow breath together. Feel the craving rise as you inhale, and soften as you exhale.",
-        "Picture the craving as a wave of energy. Waves always crest and settle — yours is already easing.",
-        "You don’t actually want nicotine. You’re feeling your body return to balance."
-      ],
-      "userPrompts": [
-        "Ask the user to rate their craving from 1-10 before and after the relief exercise.",
-        "Invite them to notice any shifts in their body or mindset."
-      ],
-      "improvNotes": [
-        "Deliver instructions one at a time.",
-        "Celebrate even small drops in intensity.",
-        "Avoid any mention of willpower or fighting through the craving." 
-      ],
-      "llmProvider": "openai",
-      "llmModel": "gpt-4o-mini"
+  "intent": "Guide the user through breathing, observation, physical release, and reframing to reduce craving intensity.",
+  "tone": "Soothing, steady, encouraging.",
+  "coachMessages": [
+    "Let’s take one slow breath together. Inhale gently through your nose… and exhale through your mouth. Feel your body begin to settle.",
+    "Now notice the craving like a small wave of energy. You don’t have to stop it — just watch it rise, crest, and fall.",
+    "Check in with your body for a moment. Are your shoulders lifted? Let them drop, just a little. Unclench your jaw. Let your hands rest loosely.",
+    "That calm you feel now — that’s real release. It’s your body rebalancing itself, not nicotine fixing anything.",
+    "You’re not missing out on anything right now. What you feel isn’t a need for nicotine — it’s your body coming back into balance."
+  ],
+  "userPrompts": [
+    "Ask the user to rate their craving from 1–10 before and after the relief exercise.",
+    "Invite them to describe any sensations that changed — warmth, lightness, calm, or focus.",
+    "Encourage them to notice how quickly the craving softened once they stopped resisting."
+  ],
+  "improvNotes": [
+    "Deliver one line at a time with short pauses between each instruction.",
+    "Keep tone gentle and voice pacing slow; the experience should feel embodied, not cognitive.",
+    "Celebrate even small drops in craving intensity as real wins.",
+    "Avoid any mention of willpower, suppression, or ‘fighting’ the craving."
+  ],
+  "extendedCoachMessages": [
+    {
+      "id": "center-1",
+      "text": "Let’s take one slow breath together.",
+      "pauseSecondsAfter": 1.2
     },
+    {
+      "id": "center-2",
+      "text": "Inhale gently through your nose… two… three… four.",
+      "pauseSecondsAfter": 2.0
+    },
+    {
+      "id": "center-3",
+      "text": "Hold for a moment.",
+      "pauseSecondsAfter": 1.0
+    },
+    {
+      "id": "center-4",
+      "text": "Now exhale through your mouth… three… four.",
+      "pauseSecondsAfter": 1.8
+    },
+    {
+      "id": "observe-1",
+      "text": "Good. Notice the craving like a small wave of energy.",
+      "pauseSecondsAfter": 1.4
+    },
+    {
+      "id": "observe-2",
+      "text": "You don’t have to stop it — just watch it rise… crest… and fall.",
+      "pauseSecondsAfter": 2.0
+    },
+    {
+      "id": "release-1",
+      "text": "Now check your body.",
+      "pauseSecondsAfter": 1.0
+    },
+    {
+      "id": "release-2",
+      "text": "Are your shoulders lifted? Let them drop, just a little.",
+      "pauseSecondsAfter": 1.4
+    },
+    {
+      "id": "release-3",
+      "text": "Unclench your jaw, soften your face.",
+      "pauseSecondsAfter": 1.4
+    },
+    {
+      "id": "release-4",
+      "text": "Let your hands rest loosely on your lap.",
+      "pauseSecondsAfter": 1.2
+    },
+    {
+      "id": "reframe-1",
+      "text": "That calm you feel now is real release — calm you created yourself.",
+      "pauseSecondsAfter": 1.6
+    },
+    {
+      "id": "reframe-2",
+      "text": "You’re not missing out on anything right now.",
+      "pauseSecondsAfter": 1.4
+    },
+    {
+      "id": "reframe-3",
+      "text": "What you felt was just your body coming back into balance.",
+      "pauseSecondsAfter": 1.6
+    },
+    {
+      "id": "checkin-1",
+      "text": "On a scale of one to ten, how strong is the craving now?",
+      "pauseSecondsAfter": 0.5,
+      "expectUserResponse": true
+    }
+  ],
+  "llmProvider": "openai",
+  "llmModel": "gpt-4o-mini"
+}
+,
     "reflection": {
       "intent": "Spark curiosity about why cravings appear and how nicotine maintains them.",
       "tone": "Curious, invitational, lightly energetic.",

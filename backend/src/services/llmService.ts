@@ -125,7 +125,6 @@ export async function generateCoachResponse(
     stage: payload.stage,
     messages,
     nextStage: nextStage ?? undefined,
-    followUpQuestions: stageScript.userPrompts.slice(0, 1),
     source
   };
 }

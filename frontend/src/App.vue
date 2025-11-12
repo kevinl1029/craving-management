@@ -12,9 +12,10 @@ import AnalyticsGateHint from './components/AnalyticsGateHint.vue';
 <style scoped>
 .app-shell {
   min-height: 100vh;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(160deg, #0d5c63 0%, #4abdac 100%);
+  background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
   color: #ffffff;
 }
 </style>

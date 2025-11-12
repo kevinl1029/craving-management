@@ -1,34 +1,32 @@
 <template>
   <section class="session">
-    <StageProgress :active-stage="currentStage" />
+    <StageDebugBadge v-if="stageDebugVisible" :stage-label="stageLabel" :detail="stageDetail" />
 
-    <ReliefIntensityCard
-      v-if="showBeforePrompt"
-      title="Before we start, how strong is it?"
-      subtitle="Use the slider to rate your craving from 1 (barely there) to 10 (overpowering)."
-      cta-label="Log intensity"
-      @submit="setBeforeIntensity"
-    />
-
-    <ReliefIntensityCard
-      v-else-if="showAfterPrompt"
-      title="How does the craving feel now?"
-      subtitle="Give the intensity another rating so we can track how much it dropped."
-      cta-label="Log updated intensity"
-      @submit="setAfterIntensity"
-    />
-
-    <div class="transcript-wrapper">
-      <ChatMessageList :messages="messages" />
+    <div v-if="currentStage === 'entry'" class="stage-container">
+      <EntryStage @start-relief="startReliefStage" @explore="handleEntryExplore" />
     </div>
 
-    <div v-if="ctaButtonVisible" class="cta-banner">
-      <button class="teaser-cta" @click="openConversionModal">
-        Start Freedom Lesson 1 — Free Preview
-      </button>
+    <div v-else-if="currentStage === 'relief'" class="stage-container">
+      <ReliefStage
+        :pre-intensity="reliefRatings.before"
+        @pre-intensity-selected="handlePreIntensitySelection"
+        @post-intensity-selected="handlePostIntensitySelection"
+        @step-change="handleReliefStepChange"
+        @complete="handleReliefFlowComplete"
+      />
     </div>
 
-    <ChatInputBar @submit="handleSubmit" :disabled="inputDisabled" />
+    <div v-else class="coming-soon">
+      <div class="coming-card">
+        <p class="eyebrow">next up</p>
+        <h2>Reflection + Teaser flows are cooking.</h2>
+        <p>
+          For now we’re focused on crafting the perfect Entry and Relief experience. Restart the journey to run another craving scenario.
+        </p>
+        <button type="button" @click="resetToEntry">Restart</button>
+      </div>
+    </div>
+
     <ConversionModal
       v-if="showConversionModal"
       @close="closeConversionModal"
@@ -41,14 +39,12 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ChatInputBar from '../components/ChatInputBar.vue';
-import ChatMessageList from '../components/ChatMessageList.vue';
-import StageProgress from '../components/StageProgress.vue';
-import ReliefIntensityCard from '../components/ReliefIntensityCard.vue';
 import ConversionModal from '../components/ConversionModal.vue';
+import EntryStage from '../components/onboarding/EntryStage.vue';
+import ReliefStage from '../components/onboarding/relief/ReliefStage.vue';
+import StageDebugBadge from '../components/onboarding/StageDebugBadge.vue';
 import type { StageKey } from '../lib/stages';
-import { getNextStage } from '../lib/stages';
-import { sendConversation } from '../services/conversationService';
+import { stageLabels } from '../lib/stages';
 import {
   createSession as createSessionApi,
   updateSession as updateSessionApi,
@@ -56,11 +52,16 @@ import {
   recordConversion as recordConversionApi
 } from '../services/sessionService';
 
-interface MessageItem {
-  id: string;
-  author: 'coach' | 'user';
-  text: string;
-}
+type ReliefFlowStep = 'pre-intensity' | 'center' | 'observe' | 'release' | 'reframe' | 'checkin';
+
+const reliefStepLabels: Record<ReliefFlowStep, string> = {
+  'pre-intensity': 'Before Rating',
+  center: 'Center',
+  observe: 'Observe',
+  release: 'Release',
+  reframe: 'Reframe',
+  checkin: 'Check-in'
+};
 
 const route = useRoute();
 
@@ -68,20 +69,12 @@ const currentStage = ref<StageKey>('entry');
 const sessionId = ref(crypto.randomUUID());
 const sessionReady = ref(false);
 const showConversionModal = ref(false);
-const messages = ref<MessageItem[]>([
-  {
-    id: crypto.randomUUID(),
-    author: 'coach',
-    text: 'I am the Ascend Freedom Coach. Tell me what the craving feels like and we will move through it together.'
-  }
-]);
-
 const reliefRatings = reactive({
   before: null as number | null,
   after: null as number | null
 });
-
-const awaitingAfterRating = ref(false);
+const stageDetail = ref<string | null>('Prompt');
+const stageDebugVisible = import.meta.env.VITE_STAGE_DEBUG !== 'false';
 
 if (typeof route.query.stage === 'string') {
   const stageValue = route.query.stage.toLowerCase();
@@ -90,23 +83,26 @@ if (typeof route.query.stage === 'string') {
   }
 }
 
-const showBeforePrompt = computed(() => currentStage.value === 'relief' && reliefRatings.before === null);
-const showAfterPrompt = computed(() => awaitingAfterRating.value && reliefRatings.after === null);
-const inputDisabled = computed(
-  () => !sessionReady.value || showBeforePrompt.value || showAfterPrompt.value
-);
-const ctaButtonVisible = computed(() => ['teaser', 'conversion'].includes(currentStage.value));
+const stageLabel = computed(() => stageLabels[currentStage.value]);
 
-watch(currentStage, (newStage, oldStage) => {
-  if (oldStage === 'relief' && newStage !== 'relief' && reliefRatings.after === null) {
-    awaitingAfterRating.value = true;
-  }
-  if (newStage === 'relief') {
-    awaitingAfterRating.value = false;
-  }
-  if (newStage === 'conversion') {
-    openConversionModal();
-  }
+watch(
+  currentStage,
+  (newStage) => {
+    if (newStage !== 'relief') {
+      stageDetail.value = newStage === 'entry' ? 'Prompt' : null;
+    }
+    if (newStage === 'conversion') {
+      openConversionModal();
+    }
+  },
+  { immediate: true }
+);
+
+onMounted(() => {
+  bootstrapSession().catch((error) => {
+    console.warn('Failed to bootstrap session', error);
+    sessionReady.value = true;
+  });
 });
 
 async function bootstrapSession() {
@@ -120,13 +116,6 @@ async function bootstrapSession() {
 
   void persistSession({ stage: currentStage.value });
 }
-
-onMounted(() => {
-  bootstrapSession().catch((error) => {
-    console.warn('Failed to bootstrap session', error);
-    sessionReady.value = true; // allow the flow even if persistence fails
-  });
-});
 
 async function persistSession(payload: UpdateSessionPayload) {
   if (!sessionReady.value) return;
@@ -164,111 +153,132 @@ function handleCheckout() {
   closeConversionModal();
 }
 
-function appendMessage(author: 'coach' | 'user', text: string) {
-  messages.value = [
-    ...messages.value,
-    {
-      id: crypto.randomUUID(),
-      author,
-      text
-    }
-  ];
-}
-
 function setBeforeIntensity(value: number) {
   reliefRatings.before = value;
-  appendMessage('user', `Craving intensity logged at ${value}/10.`);
   void persistSession({ intensityBefore: value, stage: currentStage.value });
 }
 
 function setAfterIntensity(value: number) {
   reliefRatings.after = value;
-  awaitingAfterRating.value = false;
-  appendMessage('user', `Craving intensity now feels like ${value}/10.`);
   void persistSession({ intensityAfter: value, stage: currentStage.value });
 }
 
-async function handleSubmit(text: string) {
-  const userMessage: MessageItem = {
-    id: crypto.randomUUID(),
-    author: 'user',
-    text
-  };
-  messages.value = [...messages.value, userMessage];
+function handlePreIntensitySelection(value: number) {
+  setBeforeIntensity(value);
+}
 
-  try {
-    const intensity = currentStage.value === 'relief' ? reliefRatings.before : reliefRatings.after;
+function handlePostIntensitySelection(value: number) {
+  setAfterIntensity(value);
+}
 
-    const response = await sendConversation({
-      sessionId: sessionId.value,
-      stage: currentStage.value,
-      userInput: text,
-      metadata: {
-        mode: 'text',
-        cravingIntensity: intensity ?? undefined
-      }
-    });
+function handleReliefStepChange(step: ReliefFlowStep | 'pre-intensity') {
+  stageDetail.value = reliefStepLabels[step];
+}
 
-    const coachMessages = response.messages.map((line) => ({
-      id: crypto.randomUUID(),
-      author: 'coach' as const,
-      text: line
-    }));
+function startReliefStage() {
+  reliefRatings.before = null;
+  reliefRatings.after = null;
+  stageDetail.value = reliefStepLabels['pre-intensity'];
+  currentStage.value = 'relief';
+  void persistSession({ stage: 'relief' });
+}
 
-    messages.value = [...messages.value, ...coachMessages];
+function handleEntryExplore() {
+  currentStage.value = 'reflection';
+  stageDetail.value = null;
+  void persistSession({ stage: 'reflection' });
+}
 
-    const targetStage = response.nextStage ?? getNextStage(currentStage.value) ?? currentStage.value;
-    currentStage.value = targetStage;
-    void persistSession({ stage: targetStage, endSession: targetStage === 'conversion' });
+function handleReliefFlowComplete() {
+  currentStage.value = 'reflection';
+  stageDetail.value = null;
+  void persistSession({
+    stage: 'reflection',
+    intensityBefore: reliefRatings.before ?? undefined,
+    intensityAfter: reliefRatings.after ?? undefined
+  });
+}
 
-    if (response.followUpQuestions?.length) {
-      appendMessage('coach', response.followUpQuestions[0]!);
-    }
-  } catch (error) {
-    console.error(error);
-    appendMessage('coach', 'Something went wrong reaching the coach. Take a breath — we will try again in a moment.');
-  }
+function resetToEntry() {
+  currentStage.value = 'entry';
+  stageDetail.value = 'Prompt';
+  reliefRatings.before = null;
+  reliefRatings.after = null;
+  void persistSession({ stage: 'entry' });
 }
 </script>
 
 <style scoped>
 .session {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 2rem 0 3rem;
   min-height: 100vh;
-}
-
-.transcript-wrapper {
-  flex: 1;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  border-radius: 32px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
-  overflow: hidden;
+  background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
+  color: #ffffff;
 }
 
-.cta-banner {
+.stage-container,
+.coming-soon {
+  flex: 1;
   display: flex;
+  align-items: stretch;
   justify-content: center;
-  margin: 0 1.5rem 1.5rem;
+  width: 100%;
 }
 
-.teaser-cta {
+.stage-container > * {
+  flex: 1;
+}
+
+.coming-card {
+  align-self: center;
+  background: rgba(4, 31, 33, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 28px;
+  padding: 2.5rem;
+  max-width: 480px;
+  text-align: center;
+  color: #fff;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+
+.coming-card .eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0.5rem;
+}
+
+.coming-card h2 {
+  margin-bottom: 0.75rem;
+}
+
+.coming-card p {
+  margin-bottom: 1.5rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+.coming-card button {
   border: none;
   border-radius: 999px;
-  padding: 1rem 2.5rem;
-  font-size: 1.05rem;
+  padding: 0.85rem 2.4rem;
   font-weight: 600;
-  color: #ffffff;
   background: linear-gradient(135deg, #fc4a1a, #f7b733);
-  box-shadow: 0 20px 40px rgba(252, 74, 26, 0.35);
+  color: #fff;
   cursor: pointer;
+  transition: opacity 0.2s ease;
+}
+
+.coming-card button:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .coming-card {
+    padding: 2rem;
+  }
 }
 </style>

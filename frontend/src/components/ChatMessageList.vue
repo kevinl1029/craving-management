@@ -25,25 +25,27 @@ defineProps<{
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.5rem;
+  padding: 0;
 }
 
 .bubble {
-  max-width: 80%;
-  padding: 1rem 1.25rem;
-  border-radius: 20px;
+  max-width: 85%;
+  padding: 1.25rem 1.5rem;
+  border-radius: 24px;
   font-size: 1rem;
-  line-height: 1.5;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .bubble.coach {
   align-self: flex-start;
-  background: rgba(13, 92, 99, 0.7);
+  background: rgba(31, 108, 117, 0.85);
+  color: #ffffff;
 }
 
 .bubble.user {
   align-self: flex-end;
-  background: rgba(252, 74, 26, 0.85);
+  background: rgba(88, 164, 176, 0.75);
+  color: #ffffff;
 }
 </style>

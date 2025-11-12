@@ -30,18 +30,20 @@ const stages = stageOrder;
 }
 
 .pill {
-  padding: 0.45rem 1rem;
+  padding: 0.6rem 1.25rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.85rem;
+  background: rgba(88, 164, 176, 0.6);
+  color: rgba(255, 255, 255, 0.95);
+  font-size: 0.95rem;
+  font-weight: 500;
   letter-spacing: 0.02em;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .pill.active {
-  background: rgba(252, 74, 26, 0.85);
+  background: rgba(165, 111, 78, 0.95);
   color: #ffffff;
-  box-shadow: 0 6px 18px rgba(252, 74, 26, 0.3);
+  box-shadow: 0 4px 12px rgba(165, 111, 78, 0.4);
 }
 </style>
