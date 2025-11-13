@@ -3,9 +3,9 @@
     <CheckInStep
       v-if="currentStep === 'pre-intensity'"
       eyebrow-label="before we begin"
-      title="How strong is the craving right now?"
-      subtitle="1 = barely there, 10 = overpowering."
-      confirmation-text="Got it — starting at {value}/10."
+      title="Notice how the craving feels right now."
+      subtitle="On a scale of 1 to 10, where would you put it?"
+      confirmation-text="Got it — starting at {value}. Let's begin."
       @selected="handlePreIntensity"
     />
 
@@ -19,9 +19,9 @@
     <CheckInStep
       v-else-if="currentStep === 'checkin'"
       eyebrow-label="check-in"
-      title="How strong is the craving now?"
-      subtitle="1 = barely there, 10 = still intense."
-      confirmation-text="Logging {value}/10 — calm you created yourself."
+      title="Notice how the craving feels now."
+      subtitle="On a scale of 1 to 10, where would you put it?"
+      confirmation-text="Got it — logging {value}. Calm you created yourself."
       @selected="handlePostIntensity"
     />
   </div>

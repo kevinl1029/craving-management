@@ -2,7 +2,7 @@
   <div class="reframe-wrapper">
     <div class="bg"></div>
 
-    <StageShell class="reframe-content" visual="none">
+    <StageShell class="reframe-content" :visual="false">
       <template #visual>
         <div class="reframe-visual">
           <div class="reframe-orb"></div>
@@ -101,7 +101,8 @@ onBeforeUnmount(() => {
   min-height: 100vh;
   width: 100%;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
 }
 
@@ -115,6 +116,18 @@ onBeforeUnmount(() => {
   position: relative;
   z-index: 2;
   width: 100%;
+  animation: fade-in-up 0.8s ease-out;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .statements {
@@ -145,11 +158,17 @@ onBeforeUnmount(() => {
 
 @media (max-width: 600px) {
   .title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
   }
 
   .statement {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    padding: 0.65rem 0.85rem;
+    line-height: 1.5;
+  }
+
+  .statements {
+    gap: 0.6rem;
   }
 }
 </style>

@@ -18,7 +18,6 @@
 
       <template #narrative>
         <StageNarrative
-          eyebrow="release"
           :title="instruction"
           subtitle="Your tension is represented by the orb — watch it disappear completely."
         />

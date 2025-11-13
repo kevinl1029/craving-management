@@ -29,6 +29,7 @@ const props = withDefaults(
   position: relative;
   width: 100%;
   min-height: 100vh;
+  box-sizing: border-box;
   display: grid;
   grid-template-rows: minmax(var(--visual-size), 50vh) auto;
   grid-template-columns: 1fr;
@@ -39,6 +40,8 @@ const props = withDefaults(
 
 .stage-shell--no-visual {
   grid-template-rows: auto;
+  align-content: center;
+  padding: 2rem 1.5rem;
 }
 
 .stage-visual {
@@ -52,6 +55,11 @@ const props = withDefaults(
   width: min(640px, 90vw);
   max-height: clamp(12rem, 35vh, 18rem);
   overflow: hidden;
+}
+
+.stage-shell--no-visual .stage-narrative {
+  max-height: none;
+  overflow: visible;
 }
 
 .stage-narrative ::v-deep(.stage-narrative-content) {
