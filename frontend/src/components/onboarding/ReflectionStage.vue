@@ -1,13 +1,14 @@
 <template>
-  <div class="reframe-wrapper">
+  <div class="reflection-wrapper">
     <div class="ambient-background"></div>
 
     <StageShell :visual="false">
       <template #narrative>
         <ScriptedNarrative
-          stageId="cognitive_reframe"
+          stageId="reflection"
           align="center"
           @sceneChange="handleSceneChange"
+          @ctaClick="handleCtaClick"
           @stageComplete="handleStageComplete"
         />
       </template>
@@ -16,16 +17,21 @@
 </template>
 
 <script setup lang="ts">
-import StageShell from '../StageShell.vue';
-import ScriptedNarrative from '../ScriptedNarrative.vue';
+import StageShell from './StageShell.vue';
+import ScriptedNarrative from './ScriptedNarrative.vue';
 
 const emit = defineEmits<{
   (e: 'complete'): void;
+  (e: 'cta', payload: { stageId: string; sceneId: string; ctaId: string }): void;
 }>();
 
 function handleSceneChange(payload: { sceneId: string }) {
   // Optional: analytics or debug logging
-  console.log('[CognitiveReframeStep] Scene changed:', payload.sceneId);
+  console.log('[ReflectionStage] Scene changed:', payload.sceneId);
+}
+
+function handleCtaClick(payload: { sceneId: string; ctaId: string }) {
+  emit('cta', { stageId: 'reflection', ...payload });
 }
 
 function handleStageComplete() {
@@ -34,7 +40,7 @@ function handleStageComplete() {
 </script>
 
 <style scoped>
-.reframe-wrapper {
+.reflection-wrapper {
   position: relative;
   min-height: 100vh;
   width: 100%;
@@ -77,7 +83,7 @@ function handleStageComplete() {
   }
 }
 
-.reframe-wrapper > :deep(.stage-shell) {
+.reflection-wrapper > :deep(.stage-shell) {
   position: relative;
   z-index: 1;
 }

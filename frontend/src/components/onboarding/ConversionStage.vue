@@ -1,13 +1,14 @@
 <template>
-  <div class="reframe-wrapper">
+  <div class="conversion-wrapper">
     <div class="ambient-background"></div>
 
     <StageShell :visual="false">
       <template #narrative>
         <ScriptedNarrative
-          stageId="cognitive_reframe"
+          stageId="conversion"
           align="center"
           @sceneChange="handleSceneChange"
+          @ctaClick="handleCtaClick"
           @stageComplete="handleStageComplete"
         />
       </template>
@@ -16,16 +17,21 @@
 </template>
 
 <script setup lang="ts">
-import StageShell from '../StageShell.vue';
-import ScriptedNarrative from '../ScriptedNarrative.vue';
+import StageShell from './StageShell.vue';
+import ScriptedNarrative from './ScriptedNarrative.vue';
 
 const emit = defineEmits<{
   (e: 'complete'): void;
+  (e: 'cta', payload: { stageId: string; sceneId: string; ctaId: string }): void;
 }>();
 
 function handleSceneChange(payload: { sceneId: string }) {
   // Optional: analytics or debug logging
-  console.log('[CognitiveReframeStep] Scene changed:', payload.sceneId);
+  console.log('[ConversionStage] Scene changed:', payload.sceneId);
+}
+
+function handleCtaClick(payload: { sceneId: string; ctaId: string }) {
+  emit('cta', { stageId: 'conversion', ...payload });
 }
 
 function handleStageComplete() {
@@ -34,7 +40,7 @@ function handleStageComplete() {
 </script>
 
 <style scoped>
-.reframe-wrapper {
+.conversion-wrapper {
   position: relative;
   min-height: 100vh;
   width: 100%;
@@ -51,41 +57,39 @@ function handleStageComplete() {
 .ambient-background::before {
   content: '';
   position: absolute;
-  top: 50%;
+  top: 30%;
   left: 50%;
-  width: 20rem;
-  height: 20rem;
+  width: 16rem;
+  height: 16rem;
   transform: translate(-50%, -50%);
   background: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.08) 0%,
-    rgba(16, 78, 84, 0.04) 40%,
-    rgba(16, 78, 84, 0) 70%
+    rgba(13, 148, 136, 0.15) 0%,
+    rgba(15, 118, 110, 0.08) 35%,
+    rgba(16, 78, 84, 0) 65%
   );
-  filter: blur(30px);
-  animation: gentle-pulse 8s ease-in-out infinite;
+  filter: blur(25px);
+  animation: subtle-glow 6s ease-in-out infinite;
 }
 
-@keyframes gentle-pulse {
+@keyframes subtle-glow {
   0%, 100% {
-    opacity: 0.6;
-    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.7;
   }
   50% {
-    opacity: 0.8;
-    transform: translate(-50%, -50%) scale(1.05);
+    opacity: 0.9;
   }
 }
 
-.reframe-wrapper > :deep(.stage-shell) {
+.conversion-wrapper > :deep(.stage-shell) {
   position: relative;
   z-index: 1;
 }
 
 @media (max-width: 600px) {
   .ambient-background::before {
-    width: 16rem;
-    height: 16rem;
+    width: 14rem;
+    height: 14rem;
   }
 }
 </style>

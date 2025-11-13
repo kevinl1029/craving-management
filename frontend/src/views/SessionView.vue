@@ -9,6 +9,7 @@
     <div v-else-if="currentStage === 'relief'" class="stage-container">
       <ReliefStage
         :pre-intensity="reliefRatings.before"
+        :initial-step="initialReliefStep"
         @pre-intensity-selected="handlePreIntensitySelection"
         @post-intensity-selected="handlePostIntensitySelection"
         @step-change="handleReliefStepChange"
@@ -16,32 +17,28 @@
       />
     </div>
 
-    <div v-else class="coming-soon">
-      <div class="coming-card">
-        <p class="eyebrow">next up</p>
-        <h2>Reflection + Teaser flows are cooking.</h2>
-        <p>
-          For now we’re focused on crafting the perfect Entry and Relief experience. Restart the journey to run another craving scenario.
-        </p>
-        <button type="button" @click="resetToEntry">Restart</button>
-      </div>
+    <div v-else-if="currentStage === 'reflection'" class="stage-container">
+      <ReflectionStage @complete="handleReflectionComplete" @cta="handleStageCta" />
     </div>
 
-    <ConversionModal
-      v-if="showConversionModal"
-      @close="closeConversionModal"
-      @checkout="handleCheckout"
-      @waitlist="handleWaitlist"
-    />
+    <div v-else-if="currentStage === 'teaser'" class="stage-container">
+      <TeaserStage @complete="handleTeaserComplete" @cta="handleStageCta" />
+    </div>
+
+    <div v-else-if="currentStage === 'conversion'" class="stage-container">
+      <ConversionStage @complete="handleConversionComplete" @cta="handleConversionCta" />
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import ConversionModal from '../components/ConversionModal.vue';
 import EntryStage from '../components/onboarding/EntryStage.vue';
 import ReliefStage from '../components/onboarding/relief/ReliefStage.vue';
+import ReflectionStage from '../components/onboarding/ReflectionStage.vue';
+import TeaserStage from '../components/onboarding/TeaserStage.vue';
+import ConversionStage from '../components/onboarding/ConversionStage.vue';
 import StageDebugBadge from '../components/onboarding/StageDebugBadge.vue';
 import type { StageKey } from '../lib/stages';
 import { stageLabels } from '../lib/stages';
@@ -68,18 +65,31 @@ const route = useRoute();
 const currentStage = ref<StageKey>('entry');
 const sessionId = ref(crypto.randomUUID());
 const sessionReady = ref(false);
-const showConversionModal = ref(false);
 const reliefRatings = reactive({
   before: null as number | null,
   after: null as number | null
 });
 const stageDetail = ref<string | null>('Prompt');
 const stageDebugVisible = import.meta.env.VITE_STAGE_DEBUG !== 'false';
+const initialReliefStep = ref<ReliefFlowStep | null>(null);
 
 if (typeof route.query.stage === 'string') {
   const stageValue = route.query.stage.toLowerCase();
   if (['entry', 'relief', 'reflection', 'teaser', 'conversion'].includes(stageValue)) {
     currentStage.value = stageValue as StageKey;
+  }
+}
+
+// Parse step query parameter for relief stage
+if (typeof route.query.step === 'string') {
+  const stepValue = route.query.step.toLowerCase();
+  const validSteps: ReliefFlowStep[] = ['pre-intensity', 'center', 'observe', 'release', 'reframe', 'checkin'];
+  if (validSteps.includes(stepValue as ReliefFlowStep)) {
+    initialReliefStep.value = stepValue as ReliefFlowStep;
+    // If step is specified, automatically set stage to relief
+    currentStage.value = 'relief';
+    // Set appropriate stage detail label
+    stageDetail.value = reliefStepLabels[stepValue as ReliefFlowStep];
   }
 }
 
@@ -90,9 +100,6 @@ watch(
   (newStage) => {
     if (newStage !== 'relief') {
       stageDetail.value = newStage === 'entry' ? 'Prompt' : null;
-    }
-    if (newStage === 'conversion') {
-      openConversionModal();
     }
   },
   { immediate: true }
@@ -124,34 +131,6 @@ async function persistSession(payload: UpdateSessionPayload) {
 
 const checkoutUrl = import.meta.env.VITE_CHECKOUT_URL;
 const waitlistUrl = import.meta.env.VITE_WAITLIST_URL;
-const conversionLogged = ref(false);
-
-function openConversionModal() {
-  showConversionModal.value = true;
-  if (!conversionLogged.value) {
-    conversionLogged.value = true;
-    void recordConversionApi(sessionId.value, { plan: 'freedom_journey', checkoutStarted: false });
-  }
-}
-
-function closeConversionModal() {
-  showConversionModal.value = false;
-}
-
-function handleWaitlist() {
-  if (waitlistUrl) {
-    window.open(waitlistUrl, '_blank', 'noopener');
-  }
-  closeConversionModal();
-}
-
-function handleCheckout() {
-  void recordConversionApi(sessionId.value, { plan: 'freedom_journey', checkoutStarted: true });
-  if (checkoutUrl) {
-    window.open(checkoutUrl, '_blank', 'noopener');
-  }
-  closeConversionModal();
-}
 
 function setBeforeIntensity(value: number) {
   reliefRatings.before = value;
@@ -184,9 +163,10 @@ function startReliefStage() {
 }
 
 function handleEntryExplore() {
-  currentStage.value = 'reflection';
+  // Explore path skips directly to teaser (bypasses relief and reflection)
+  currentStage.value = 'teaser';
   stageDetail.value = null;
-  void persistSession({ stage: 'reflection' });
+  void persistSession({ stage: 'teaser' });
 }
 
 function handleReliefFlowComplete() {
@@ -197,6 +177,51 @@ function handleReliefFlowComplete() {
     intensityBefore: reliefRatings.before ?? undefined,
     intensityAfter: reliefRatings.after ?? undefined
   });
+}
+
+function handleReflectionComplete() {
+  currentStage.value = 'teaser';
+  stageDetail.value = null;
+  void persistSession({ stage: 'teaser' });
+}
+
+function handleTeaserComplete() {
+  currentStage.value = 'conversion';
+  stageDetail.value = null;
+  void persistSession({ stage: 'conversion' });
+}
+
+function handleConversionComplete() {
+  // Conversion stage completion - currently just logs
+  console.log('[SessionView] Conversion stage completed');
+}
+
+function handleStageCta(payload: { stageId: string; sceneId: string; ctaId: string }) {
+  // Generic CTA handler for reflection and teaser stages
+  console.log('[SessionView] CTA clicked:', payload);
+}
+
+function handleConversionCta(payload: { stageId: string; sceneId: string; ctaId: string }) {
+  console.log('[SessionView] Conversion CTA clicked:', payload);
+
+  // Record conversion event
+  void recordConversionApi(sessionId.value, {
+    plan: 'freedom_journey',
+    checkoutStarted: payload.ctaId === 'conversion_start_journey'
+  });
+
+  // Handle different conversion CTAs
+  if (payload.ctaId === 'conversion_start_journey') {
+    if (checkoutUrl) {
+      window.open(checkoutUrl, '_blank', 'noopener');
+    }
+  } else if (payload.ctaId === 'conversion_try_lesson') {
+    // TODO: Route to free lesson preview
+    // For now, also go to checkout
+    if (checkoutUrl) {
+      window.open(checkoutUrl, '_blank', 'noopener');
+    }
+  }
 }
 
 function resetToEntry() {
@@ -218,8 +243,7 @@ function resetToEntry() {
   color: #ffffff;
 }
 
-.stage-container,
-.coming-soon {
+.stage-container {
   flex: 1;
   display: flex;
   align-items: stretch;
@@ -229,56 +253,5 @@ function resetToEntry() {
 
 .stage-container > * {
   flex: 1;
-}
-
-.coming-card {
-  align-self: center;
-  background: rgba(4, 31, 33, 0.55);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 28px;
-  padding: 2.5rem;
-  max-width: 480px;
-  text-align: center;
-  color: #fff;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
-}
-
-.coming-card .eyebrow {
-  text-transform: uppercase;
-  letter-spacing: 0.3em;
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 0.5rem;
-}
-
-.coming-card h2 {
-  margin-bottom: 0.75rem;
-}
-
-.coming-card p {
-  margin-bottom: 1.5rem;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.5;
-}
-
-.coming-card button {
-  border: none;
-  border-radius: 999px;
-  padding: 0.85rem 2.4rem;
-  font-weight: 600;
-  background: linear-gradient(135deg, #fc4a1a, #f7b733);
-  color: #fff;
-  cursor: pointer;
-  transition: opacity 0.2s ease;
-}
-
-.coming-card button:hover {
-  opacity: 0.9;
-}
-
-@media (max-width: 640px) {
-  .coming-card {
-    padding: 2rem;
-  }
 }
 </style>

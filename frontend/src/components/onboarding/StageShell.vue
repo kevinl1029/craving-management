@@ -66,4 +66,9 @@ const props = withDefaults(
   height: 100%;
   overflow-y: auto;
 }
+
+.stage-shell--no-visual .stage-narrative ::v-deep(.stage-narrative-content) {
+  height: auto;
+  overflow-y: visible;
+}
 </style>

@@ -37,6 +37,7 @@ import CheckInStep from './CheckInStep.vue';
 
 const props = defineProps<{
   preIntensity: number | null;
+  initialStep?: ReliefStageState | null;
 }>();
 
 const emit = defineEmits<{
@@ -49,7 +50,15 @@ const emit = defineEmits<{
 type ReliefStepKey = 'center' | 'observe' | 'release' | 'reframe' | 'checkin';
 type ReliefStageState = ReliefStepKey | 'pre-intensity';
 
-const currentStep = ref<ReliefStageState>(props.preIntensity == null ? 'pre-intensity' : 'center');
+// Determine initial step: use initialStep if provided, otherwise use preIntensity logic
+const getInitialStep = (): ReliefStageState => {
+  if (props.initialStep) {
+    return props.initialStep;
+  }
+  return props.preIntensity == null ? 'pre-intensity' : 'center';
+};
+
+const currentStep = ref<ReliefStageState>(getInitialStep());
 
 watch(
   () => props.preIntensity,
