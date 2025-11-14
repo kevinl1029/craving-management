@@ -216,11 +216,9 @@ function handleConversionCta(payload: { stageId: string; sceneId: string; ctaId:
       window.open(checkoutUrl, '_blank', 'noopener');
     }
   } else if (payload.ctaId === 'conversion_try_lesson') {
-    // TODO: Route to free lesson preview
-    // For now, also go to checkout
-    if (checkoutUrl) {
-      window.open(checkoutUrl, '_blank', 'noopener');
-    }
+    // TODO: Route to free lesson preview when available
+    // Currently disabled for market validation phase
+    console.log('[SessionView] Free lesson preview - coming soon');
   }
 }
 
