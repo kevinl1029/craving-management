@@ -33,7 +33,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import EntryStage from '../components/onboarding/EntryStage.vue';
 import ReliefStage from '../components/onboarding/relief/ReliefStage.vue';
 import ReflectionStage from '../components/onboarding/ReflectionStage.vue';
@@ -61,6 +61,7 @@ const reliefStepLabels: Record<ReliefFlowStep, string> = {
 };
 
 const route = useRoute();
+const router = useRouter();
 
 const currentStage = ref<StageKey>('entry');
 const sessionId = ref(crypto.randomUUID());
@@ -212,9 +213,7 @@ function handleConversionCta(payload: { stageId: string; sceneId: string; ctaId:
 
   // Handle different conversion CTAs
   if (payload.ctaId === 'conversion_start_journey') {
-    if (checkoutUrl) {
-      window.open(checkoutUrl, '_blank', 'noopener');
-    }
+    router.push('/convert'); // Redirect to the new intermediary page
   } else if (payload.ctaId === 'conversion_try_lesson') {
     // TODO: Route to free lesson preview when available
     // Currently disabled for market validation phase
