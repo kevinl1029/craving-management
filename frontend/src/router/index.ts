@@ -30,6 +30,11 @@ export const router = createRouter({
       path: '/thank-you',
       name: 'thank-you',
       component: ThankYouView
+    },
+    {
+      path: '/convert',
+      name: 'conversion-intermediary',
+      component: () => import('../views/ConversionIntermediaryView.vue')
     }
   ]
 });
