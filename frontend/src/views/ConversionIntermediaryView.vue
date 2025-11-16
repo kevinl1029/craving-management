@@ -9,9 +9,15 @@ const emit = defineEmits<{
 const showEmailInput = ref(false);
 const email = ref('');
 
+const checkoutUrl = import.meta.env.VITE_CHECKOUT_URL;
+
 function handlePrimaryCtaClick() {
-  // TODO: Replace with actual Stripe checkout link
-  window.location.href = 'https://buy.stripe.com/test_123456789';
+  if (checkoutUrl) {
+    window.location.href = checkoutUrl;
+  } else {
+    console.error('Stripe checkout URL is not configured.');
+    // Optional: show an error to the user
+  }
 }
 
 function handleSecondaryCtaClick() {
