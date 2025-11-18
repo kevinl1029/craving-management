@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
+import { onboardingScript } from '../../../scripts/onboardingScript';
 
 const emit = defineEmits<{
   (e: 'complete'): void;
@@ -23,16 +24,16 @@ let breathingStartTimer: ReturnType<typeof setTimeout> | null = null;
 
 const runBreathingCycle = () => {
   const phaseDurations: Record<typeof breathPhase.value, number> = {
-    inhale: 5000,
-    exhale: 5000
+    inhale: inhaleDuration,
+    exhale: exhaleDuration
   };
 
   // Complete after 3.5 cycles (end on final inhale at scale 1.35)
   if (breathCycle.value >= 3 && breathPhase.value === 'inhale') {
-    // Stay on inhale (scale 1.35) and complete after full 5s inhale
+    // Stay on inhale (scale 1.35) and complete after full inhale duration
     if (!isComplete.value) {
       isComplete.value = true;
-      setTimeout(() => emit('complete'), 5000);
+      setTimeout(() => emit('complete'), inhaleDuration);
     }
     return;
   }
@@ -57,12 +58,21 @@ watch([breathPhase, breathCycle], () => {
   runBreathingCycle();
 });
 
+// Get text and timing from script
+const scriptConfig = onboardingScript.relief_center;
+const prefaceText = scriptConfig.scenes[0]?.lines[0]?.text || "Let's start with one slow breathing reset.";
+const prefaceDuration = scriptConfig.scenes[0]?.dwellMs || 5200;
+const inhaleText = scriptConfig.scenes[1]?.lines[0]?.text || 'Breathe in…';
+const inhaleDuration = scriptConfig.scenes[1]?.dwellMs || 5000;
+const exhaleText = scriptConfig.scenes[2]?.lines[0]?.text || 'Breathe out…';
+const exhaleDuration = scriptConfig.scenes[2]?.dwellMs || 5000;
+
 const getInstructionText = () => {
   switch (breathPhase.value) {
     case 'inhale':
-      return 'Breathe in…';
+      return inhaleText;
     case 'exhale':
-      return 'Breathe out…';
+      return exhaleText;
     default:
       return 'Keep breathing…';
   }
@@ -79,11 +89,11 @@ onMounted(() => {
 
   introPhaseTimer = setTimeout(() => {
     introPhase.value = 'breathe';
-  }, 5200);
+  }, prefaceDuration);
 
   breathingStartTimer = setTimeout(() => {
     runBreathingCycle();
-  }, 5200);
+  }, prefaceDuration);
 });
 
 onUnmounted(() => {
@@ -126,7 +136,7 @@ onUnmounted(() => {
           <div class="instruction-container" :class="{ 'instruction-container--visible': introTextVisible }">
             <transition name="instruction-fade" mode="out-in">
               <p :key="introPhase" class="instruction-text">
-                {{ introPhase === 'preface' ? "Let's start with one slow breathing reset." : getInstructionText() }}
+                {{ introPhase === 'preface' ? prefaceText : getInstructionText() }}
               </p>
             </transition>
           </div>

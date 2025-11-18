@@ -20,9 +20,9 @@
       </template>
 
       <template #narrative>
-        <StageNarrative :title="instruction" subtitle="Let it swell, peak, and ease back down. Notice how the wave is smaller than when you started.">
+        <StageNarrative :title="instruction" :subtitle="subtitle">
           <p class="observe-hint">
-            Keep your attention on the wave losing power.
+            {{ hint }}
           </p>
         </StageNarrative>
       </template>
@@ -31,15 +31,28 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
+import { onboardingScript } from '../../../scripts/onboardingScript';
 
 const emit = defineEmits<{
   (e: 'complete'): void;
 }>();
 
-const cycleMs = 5000;
+// Get text and timing from script
+const scriptConfig = onboardingScript.relief_observe;
+const initialInstruction = scriptConfig.scenes[0]?.lines[0]?.text || 'Watch the craving swell and then settle…';
+const subtitle = scriptConfig.scenes[0]?.lines[1]?.text || 'Let it swell, peak, and ease back down. Notice how the wave is smaller than when you started.';
+const hint = scriptConfig.scenes[0]?.lines[2]?.text || 'Keep your attention on the wave losing power.';
+const cycle1Text = scriptConfig.scenes[1]?.lines[0]?.text || 'See how each wave lands smaller than the last.';
+const cycle3Text = scriptConfig.scenes[2]?.lines[0]?.text || "You're just watching it lose power.";
+const cycle5Text = scriptConfig.scenes[3]?.lines[0]?.text || "Now it's almost gone.";
+const finalText = scriptConfig.scenes[4]?.lines[0]?.text || 'Notice how small and quiet it is now.';
+const finalDwellMs = scriptConfig.scenes[4]?.dwellMs || 2500;
+
+// Animation timing driven by script dwellMs (controls both text display and wave cycles)
+const cycleMs = scriptConfig.scenes[0]?.dwellMs || 5000;
 const maxCycles = 6;
 const startingBaseScale = 1.35;
 const endingBaseScale = 0.5;
@@ -49,7 +62,7 @@ const bobPixels = 6;
 const currentScale = ref(startingBaseScale);
 const currentOffset = ref(0);
 const currentCycle = ref(0);
-const instruction = ref('Watch the craving swell and then settle…');
+const instruction = ref(initialInstruction);
 const percentLeft = ref(135);
 const animationsStarted = ref(false);
 const hudVisible = ref(false);
@@ -68,11 +81,11 @@ const runCycle = () => {
   if (cycle >= maxCycles) {
     if (!finished) {
       finished = true;
-      instruction.value = 'Notice how small and quiet it is now.';
+      instruction.value = finalText;
       currentScale.value = endingBaseScale;
       currentOffset.value = 0;
       percentLeft.value = Math.round(endingBaseScale * 100);
-      setTimeout(() => emit('complete'), 2500);
+      setTimeout(() => emit('complete'), finalDwellMs);
     }
     return;
   }
@@ -92,11 +105,11 @@ const runCycle = () => {
   }, cycleMs / 2);
 
   if (cycle === 1) {
-    instruction.value = 'See how each wave lands smaller than the last.';
+    instruction.value = cycle1Text;
   } else if (cycle === 3) {
-    instruction.value = "You're just watching it lose power.";
+    instruction.value = cycle3Text;
   } else if (cycle === 5) {
-    instruction.value = "Now it's almost gone.";
+    instruction.value = cycle5Text;
   }
 
   currentCycle.value = cycle + 1;

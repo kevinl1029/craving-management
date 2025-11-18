@@ -2,9 +2,8 @@
   <div class="relief-shell">
     <CheckInStep
       v-if="currentStep === 'pre-intensity'"
+      stage-id="relief_pre_intensity"
       eyebrow-label="before we begin"
-      title="Notice how the craving feels right now."
-      subtitle="On a scale of 1 to 10, where would you put it?"
       confirmation-text="Got it — starting at {value}. Let's begin."
       @selected="handlePreIntensity"
     />
@@ -18,9 +17,8 @@
     />
     <CheckInStep
       v-else-if="currentStep === 'checkin'"
+      stage-id="relief_checkin"
       eyebrow-label="check-in"
-      title="Notice how the craving feels now."
-      subtitle="On a scale of 1 to 10, where would you put it?"
       confirmation-text="Got it — logging {value}. Calm you created yourself."
       @selected="handlePostIntensity"
     />

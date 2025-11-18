@@ -36,7 +36,7 @@
                 </div>
               </div>
 
-              <p v-if="selected !== null" class="confirmation" v-html="confirmationText.replace('{value}', `<strong>${selected}</strong>`)"></p>
+              <p v-if="selected !== null" class="confirmation" v-html="confirmationText.value.replace('{value}', `<strong>${selected}</strong>`)"></p>
             </div>
           </transition>
         </StageNarrative>
@@ -46,23 +46,46 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { nextTick, onBeforeUnmount, onMounted, ref, watch, computed } from 'vue';
 
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
+import { onboardingScript, type StageId } from '../../../scripts/onboardingScript';
 
 const props = withDefaults(
   defineProps<{
+    stageId?: StageId;
     title?: string;
     subtitle?: string;
     confirmationText?: string;
   }>(),
   {
+    stageId: 'relief_checkin',
     title: 'Notice how the craving feels now.',
     subtitle: 'On a scale of 1 to 10, where would you put it?',
     confirmationText: 'Got it — logging {value}. You did that yourself.'
   }
 );
+
+// Get text from script if stageId is provided
+const scriptConfig = computed(() => {
+  if (props.stageId && onboardingScript[props.stageId]) {
+    const stage = onboardingScript[props.stageId];
+    if (stage.scenes.length > 0) {
+      const scene = stage.scenes[0];
+      return {
+        title: scene.lines[0]?.text || props.title,
+        subtitle: scene.lines[1]?.text || props.subtitle,
+      };
+    }
+  }
+  return null;
+});
+
+// Use script text if available, otherwise fall back to props
+const title = computed(() => scriptConfig.value?.title || props.title);
+const subtitle = computed(() => scriptConfig.value?.subtitle || props.subtitle);
+const confirmationText = computed(() => props.confirmationText);
 
 const emit = defineEmits<{
   (e: 'selected', value: number): void;
@@ -249,8 +272,6 @@ function dialStyle(n: number) {
     '--dial-translate': translate
   };
 }
-
-const { title, subtitle, confirmationText } = props;
 </script>
 
 <style scoped>

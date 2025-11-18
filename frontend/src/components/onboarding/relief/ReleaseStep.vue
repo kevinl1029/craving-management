@@ -19,7 +19,7 @@
       <template #narrative>
         <StageNarrative
           :title="instruction"
-          subtitle="Your tension is represented by the orb — watch it disappear completely."
+          :subtitle="subtitle"
         />
       </template>
     </StageShell>
@@ -30,6 +30,7 @@
 import { onMounted, onBeforeUnmount, ref, computed } from 'vue';
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
+import { onboardingScript } from '../../../scripts/onboardingScript';
 
 const emit = defineEmits<{
   (e: 'complete'): void;
@@ -47,11 +48,22 @@ type Particle = {
   active: boolean;
 };
 
-const cycleMs = 3000;
+// Get text and timing from script
+const scriptConfig = onboardingScript.relief_release;
+const initialInstruction = scriptConfig.scenes[0]?.lines[0]?.text || 'Let each breath carry tension away.';
+const subtitle = scriptConfig.scenes[0]?.lines[1]?.text || 'Your tension is represented by the orb — watch it disappear completely.';
+const cycle2Text = scriptConfig.scenes[1]?.lines[0]?.text || 'Feel gravity drawing it down.';
+const cycle4Text = scriptConfig.scenes[2]?.lines[0]?.text || 'Every exhale releases more.';
+const cycle6Text = scriptConfig.scenes[3]?.lines[0]?.text || "You're lighter now.";
+const cycle8Text = scriptConfig.scenes[4]?.lines[0]?.text || 'All tension has fallen away.';
+const finalDwellMs = scriptConfig.scenes[4]?.dwellMs || 7200;
+
+// Animation timing driven by script dwellMs (controls both text display and particle release cycles)
+const cycleMs = scriptConfig.scenes[0]?.dwellMs || 3000;
 const totalCycles = 8;
 
 const particles = ref<Particle[]>([]);
-const instruction = ref('Let each breath carry tension away.');
+const instruction = ref(initialInstruction);
 const cycleProgress = ref(0);
 const animationsStarted = ref(false);
 
@@ -158,7 +170,9 @@ const runCycle = (current = 0) => {
   if (next > totalCycles) {
     if (!completed) {
       completed = true;
-      setTimeout(() => emit('complete'), 1200);
+      // The final cycle has already run for cycleMs, so we subtract that from finalDwellMs
+      const remainingTime = Math.max(0, finalDwellMs - cycleMs);
+      setTimeout(() => emit('complete'), remainingTime);
     }
     return;
   }
@@ -168,10 +182,10 @@ const runCycle = (current = 0) => {
   addParticles(particleCount);
   cycleProgress.value = next / totalCycles;
 
-  if (next === 2) instruction.value = 'Feel gravity drawing it down.';
-  if (next === 4) instruction.value = 'Every exhale releases more.';
-  if (next === 6) instruction.value = 'You’re lighter now.';
-  if (next === 8) instruction.value = 'All tension has fallen away.';
+  if (next === 2) instruction.value = cycle2Text;
+  if (next === 4) instruction.value = cycle4Text;
+  if (next === 6) instruction.value = cycle6Text;
+  if (next === 8) instruction.value = cycle8Text;
 
   timerRef = setTimeout(() => runCycle(next), cycleMs);
 };
