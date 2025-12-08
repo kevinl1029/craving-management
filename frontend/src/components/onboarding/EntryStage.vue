@@ -1,7 +1,7 @@
 <template>
   <div class="entry-stage">
     <div class="bg-layer"></div>
-    <div class="orb-glow"></div>
+    <!-- Orb removed as per requirements -->
 
     <div class="content">
       <p class="eyebrow">craving companion</p>
@@ -50,18 +50,7 @@ const emit = defineEmits<{
   background: radial-gradient(circle at top, #104e54 0%, #041f21 100%);
 }
 
-.orb-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 18rem;
-  height: 18rem;
-  transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.12) 0%, rgba(16, 78, 84, 0) 70%);
-  filter: blur(10px);
-  pointer-events: none;
-  animation: glow 6s ease-in-out infinite;
-}
+
 
 .content {
   position: relative;
@@ -139,18 +128,6 @@ const emit = defineEmits<{
   line-height: 1.5;
   max-width: 20rem;
   animation: fadeIn 1s 0.25s ease-out forwards;
-}
-
-@keyframes glow {
-  0%,
-  100% {
-    opacity: 0.55;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1.06);
-  }
 }
 
 @keyframes fadeIn {

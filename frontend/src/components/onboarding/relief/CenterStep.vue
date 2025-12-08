@@ -3,6 +3,11 @@ import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
 import { onboardingScript } from '../../../scripts/onboardingScript';
+import type { OrbState } from '../../../types/OrbState';
+
+const props = defineProps<{
+  orbState: OrbState;
+}>();
 
 const emit = defineEmits<{
   (e: 'complete'): void;
@@ -12,15 +17,12 @@ const breathPhase = ref<'inhale' | 'exhale'>('exhale');
 const breathCycle = ref(0);
 const isComplete = ref(false);
 const introPhase = ref<'preface' | 'breathe'>('preface');
-const gradientVisible = ref(false);
 const introTextVisible = ref(false);
-const orbVisible = ref(false);
 let phaseTimer: ReturnType<typeof setTimeout> | null = null;
 let introTimer: ReturnType<typeof setTimeout> | null = null;
-let gradientTimer: ReturnType<typeof setTimeout> | null = null;
-let orbTimer: ReturnType<typeof setTimeout> | null = null;
 let introPhaseTimer: ReturnType<typeof setTimeout> | null = null;
 let breathingStartTimer: ReturnType<typeof setTimeout> | null = null;
+let fadeInterval: ReturnType<typeof setInterval> | null = null;
 
 const runBreathingCycle = () => {
   const phaseDurations: Record<typeof breathPhase.value, number> = {
@@ -51,6 +53,12 @@ const runBreathingCycle = () => {
   }, delay);
 };
 
+// Sync local breath phase to parent orb state
+watch(breathPhase, (newPhase) => {
+  props.orbState.mode = 'breathe';
+  props.orbState.phase = newPhase;
+}, { immediate: true });
+
 watch([breathPhase, breathCycle], () => {
   if (phaseTimer) {
     clearTimeout(phaseTimer);
@@ -79,13 +87,25 @@ const getInstructionText = () => {
 };
 
 onMounted(() => {
+  // Initialize orb state
+  props.orbState.mode = 'breathe';
+  props.orbState.phase = 'exhale';
+  
+  // Fade in orb
+  // We use a simple interval or requestAnimationFrame to animate opacity
+  let opacity = 0;
+  fadeInterval = setInterval(() => {
+    opacity += 0.02;
+    if (opacity >= 1) {
+      opacity = 1;
+      if (fadeInterval) clearInterval(fadeInterval);
+    }
+    props.orbState.opacity = opacity;
+  }, 16);
+
   introTimer = setTimeout(() => {
     introTextVisible.value = true;
   }, 200);
-
-  orbTimer = setTimeout(() => {
-    orbVisible.value = true;
-  }, 300);
 
   introPhaseTimer = setTimeout(() => {
     introPhase.value = 'breathe';
@@ -97,39 +117,19 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (phaseTimer) {
-    clearTimeout(phaseTimer);
-  }
-  if (introTimer) {
-    clearTimeout(introTimer);
-  }
-  if (gradientTimer) {
-    clearTimeout(gradientTimer);
-  }
-  if (orbTimer) {
-    clearTimeout(orbTimer);
-  }
-  if (introPhaseTimer) {
-    clearTimeout(introPhaseTimer);
-  }
-  if (breathingStartTimer) {
-    clearTimeout(breathingStartTimer);
-  }
+  if (phaseTimer) clearTimeout(phaseTimer);
+  if (introTimer) clearTimeout(introTimer);
+  if (introPhaseTimer) clearTimeout(introPhaseTimer);
+  if (breathingStartTimer) clearTimeout(breathingStartTimer);
+  if (fadeInterval) clearInterval(fadeInterval);
 });
 </script>
 
 <template>
   <div class="center-stage">
     <StageShell>
-      <template #visual>
-        <div class="visual" :class="{ 'visual--visible': orbVisible }">
-          <div class="visual-inner" :class="`phase-${breathPhase}`">
-            <div class="orb-container">
-              <div class="orb"></div>
-            </div>
-          </div>
-        </div>
-      </template>
+      <!-- Visual slot is empty, orb is in parent -->
+      <template #visual></template>
 
       <template #narrative>
         <StageNarrative>
@@ -179,40 +179,12 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 5s ease-in-out, filter 5s ease-in-out;
 }
-
-.visual-inner.phase-inhale {
-  transform: scale(1.35);
-  filter: drop-shadow(0 0 24.3px rgba(255, 255, 255, 0.35));
-}
-
-.visual-inner.phase-exhale {
-  transform: scale(1.15);
-  filter: drop-shadow(0 0 20.7px rgba(255, 255, 255, 0.35));
-}
-
-
 
 .orb-container {
   position: relative;
   width: 100%;
   height: 100%;
-}
-
-
-.orb {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.18) 55%,
-    rgba(74, 157, 168, 0.2) 90%
-  );
-  backdrop-filter: blur(18px);
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.35), inset 0 0 30px rgba(255, 255, 255, 0.35);
 }
 
 .instruction-container {

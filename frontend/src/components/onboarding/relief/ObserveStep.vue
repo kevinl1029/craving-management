@@ -6,18 +6,8 @@
     </div>
 
     <StageShell class="observe-content">
-      <template #visual>
-        <div
-          class="observe-orb-layer"
-          :style="{
-            transform: `translateY(${currentOffset}px) scale(${currentScale})`,
-            transition: animationsStarted ? 'transform 1.5s cubic-bezier(0.4, 0, 0.2, 1), filter 1.5s ease-out' : 'none',
-            filter: `drop-shadow(0 0 ${18 * currentScale}px rgba(255, 255, 255, 0.35))`
-          }"
-        >
-          <div class="observe-orb"></div>
-        </div>
-      </template>
+      <!-- Visual slot is empty, orb is in parent -->
+      <template #visual></template>
 
       <template #narrative>
         <StageNarrative :title="instruction" :subtitle="subtitle">
@@ -31,10 +21,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import StageShell from '../StageShell.vue';
 import StageNarrative from '../StageNarrative.vue';
 import { onboardingScript } from '../../../scripts/onboardingScript';
+import type { OrbState } from '../../../types/OrbState';
+
+const props = defineProps<{
+  orbState: OrbState;
+}>();
 
 const emit = defineEmits<{
   (e: 'complete'): void;
@@ -116,7 +111,18 @@ const runCycle = () => {
   timer = window.setTimeout(runCycle, cycleMs);
 };
 
+// Sync local percentLeft to parent orb state
+watch(percentLeft, (newVal) => {
+  props.orbState.mode = 'observe';
+  props.orbState.intensity = newVal;
+}, { immediate: true });
+
 onMounted(() => {
+  // Initialize orb state
+  props.orbState.mode = 'observe';
+  props.orbState.intensity = 135;
+  props.orbState.opacity = 1;
+
   // Fade in HUD after a brief delay
   window.setTimeout(() => {
     hudVisible.value = true;
@@ -153,25 +159,6 @@ onBeforeUnmount(() => {
   position: relative;
   width: var(--visual-size);
   height: var(--visual-size);
-}
-
-.observe-orb-inner {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-}
-.observe-orb {
-  position: absolute;
-  inset: 0;
-  border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.18) 55%,
-    rgba(74, 157, 168, 0.2) 90%
-  );
-  backdrop-filter: blur(18px);
-  box-shadow: 0 0 40px rgba(255, 255, 255, 0.35), inset 0 0 30px rgba(255, 255, 255, 0.35);
 }
 
 .observe-hint {
