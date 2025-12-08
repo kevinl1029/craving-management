@@ -271,8 +271,8 @@ export const onboardingScript: Record<StageId, StageConfig> = {
       },
       {
         id: 'teaser_scene_3',
-        dwellMs: 0,
-        autoAdvance: false,
+        dwellMs: 3500,
+        autoAdvance: true,
         lines: [
           { text: 'Once you see it clearly,' },
           { text: 'cravings lose almost all their grip.' },
