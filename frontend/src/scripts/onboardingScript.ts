@@ -276,14 +276,7 @@ export const onboardingScript: Record<StageId, StageConfig> = {
         lines: [
           { text: 'Once you see it clearly,' },
           { text: 'cravings lose almost all their grip.' },
-        ],
-        ctas: [
-          {
-            id: 'teaser_see_insight',
-            label: 'See the first insight — Free',
-            variant: 'primary',
-          },
-        ],
+        ]
       },
     ],
   },
@@ -298,7 +291,7 @@ export const onboardingScript: Record<StageId, StageConfig> = {
         lines: [
           { text: "You've created real relief today." },
           { text: 'Now learn how to remove cravings completely —' },
-          { text: 'through clarity, not willpower.' },
+          { text: 'through a mindset shift, not willpower.' },
         ],
       },
       {
