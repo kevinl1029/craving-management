@@ -17,9 +17,7 @@
       />
     </div>
 
-    <div v-else-if="currentStage === 'reflection'" class="stage-container">
-      <ReflectionStage @complete="handleReflectionComplete" @cta="handleStageCta" />
-    </div>
+    <!-- Reflection stage deprecated -->
 
     <div v-else-if="currentStage === 'teaser'" class="stage-container">
       <TeaserStage @complete="handleTeaserComplete" @cta="handleStageCta" />
@@ -36,7 +34,7 @@ import { ref, reactive, computed, watch, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import EntryStage from '../components/onboarding/EntryStage.vue';
 import ReliefStage from '../components/onboarding/relief/ReliefStage.vue';
-import ReflectionStage from '../components/onboarding/ReflectionStage.vue';
+// ReflectionStage deprecated
 import TeaserStage from '../components/onboarding/TeaserStage.vue';
 import ConversionStage from '../components/onboarding/ConversionStage.vue';
 import StageDebugBadge from '../components/onboarding/StageDebugBadge.vue';
@@ -76,7 +74,7 @@ const initialReliefStep = ref<ReliefFlowStep | null>(null);
 
 if (typeof route.query.stage === 'string') {
   const stageValue = route.query.stage.toLowerCase();
-  if (['entry', 'relief', 'reflection', 'teaser', 'conversion'].includes(stageValue)) {
+  if (['entry', 'relief', 'teaser', 'conversion'].includes(stageValue)) {
     currentStage.value = stageValue as StageKey;
   }
 }
@@ -171,19 +169,14 @@ function handleEntryExplore() {
 }
 
 function handleReliefFlowComplete() {
-  currentStage.value = 'reflection';
+  // Skip reflection, go straight to teaser
+  currentStage.value = 'teaser';
   stageDetail.value = null;
   void persistSession({
-    stage: 'reflection',
+    stage: 'teaser',
     intensityBefore: reliefRatings.before ?? undefined,
     intensityAfter: reliefRatings.after ?? undefined
   });
-}
-
-function handleReflectionComplete() {
-  currentStage.value = 'teaser';
-  stageDetail.value = null;
-  void persistSession({ stage: 'teaser' });
 }
 
 function handleTeaserComplete() {

@@ -201,15 +201,6 @@ export const onboardingScript: Record<StageId, StageConfig> = {
         dwellMs: 4000,
         autoAdvance: true,
         lines: [
-          { text: "Freedom is already happening." },
-          { text: "You just let your body return to balance." },
-        ],
-      },
-      {
-        id: 'cognitive_reframe_scene_2',
-        dwellMs: 4000,
-        autoAdvance: true,
-        lines: [
           { text: "Each time you stay present," },
           { text: "the craving wave loses more of its power." },
         ],
@@ -219,7 +210,7 @@ export const onboardingScript: Record<StageId, StageConfig> = {
         dwellMs: 4000,
         autoAdvance: true,
         lines: [
-          { text: "What you felt wasn't a need —" },
+          { text: "What you felt wasn't a sign of deprivation" },
           { text: "just a passing signal from your body." },
         ],
       },
@@ -269,15 +260,6 @@ export const onboardingScript: Record<StageId, StageConfig> = {
   teaser: {
     id: 'teaser',
     scenes: [
-      {
-        id: 'teaser_scene_1',
-        dwellMs: 3500,
-        autoAdvance: true,
-        lines: [
-          { text: 'You handled that craving beautifully.' },
-          { text: 'You stayed present the whole time.' },
-        ],
-      },
       {
         id: 'teaser_scene_2',
         dwellMs: 3500,
