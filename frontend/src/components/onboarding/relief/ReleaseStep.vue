@@ -32,30 +32,60 @@ const emit = defineEmits<{
 
 // Get text and timing from script
 const scriptConfig = onboardingScript.relief_release;
-const initialInstruction = scriptConfig.scenes[0]?.lines[0]?.text || 'Now, let it go.';
-const subtitle = scriptConfig.scenes[0]?.lines[1]?.text || 'Imagine the craving dissolving into nothing.';
+const initialInstruction = scriptConfig.scenes[0]?.lines[0]?.text || 'Let each breath carry tension away.';
+const subtitle = scriptConfig.scenes[0]?.lines[1]?.text || 'Your tension is represented by the orb — watch it disappear completely.';
 const hint = scriptConfig.scenes[0]?.lines[2]?.text || 'Watch it break apart and fade away.';
-const cycle1Text = scriptConfig.scenes[1]?.lines[0]?.text || "It's breaking apart.";
-const cycle2Text = scriptConfig.scenes[2]?.lines[0]?.text || 'Fading into nothing.';
-const finalText = scriptConfig.scenes[3]?.lines[0]?.text || 'Gone.';
-const finalDwellMs = scriptConfig.scenes[3]?.dwellMs || 2500;
 
-// Animation timing driven by script dwellMs
-const cycleMs = scriptConfig.scenes[0]?.dwellMs || 5000;
-const maxCycles = 4;
+const textSequence = [
+  initialInstruction,
+  scriptConfig.scenes[1]?.lines[0]?.text || 'Feel gravity drawing it down.',
+  scriptConfig.scenes[2]?.lines[0]?.text || 'Every exhale releases more.',
+  scriptConfig.scenes[3]?.lines[0]?.text || "You're lighter now.",
+];
+
+const finalText = scriptConfig.scenes[4]?.lines[0]?.text || 'All tension has fallen away.';
+const finalDwellMs = scriptConfig.scenes[4]?.dwellMs || 7200;
+
+// Calculate milestones for text transitions
+const milestones = [
+  scriptConfig.scenes[0]?.dwellMs || 3000,
+  scriptConfig.scenes[1]?.dwellMs || 6000,
+  scriptConfig.scenes[2]?.dwellMs || 6000,
+  scriptConfig.scenes[3]?.dwellMs || 6000,
+];
+const totalAnimationDuration = milestones.reduce((a, b) => a + b, 0);
 
 const cycleProgress = ref(0);
-const currentCycle = ref(0);
 const instruction = ref(initialInstruction);
 const animationsStarted = ref(false);
 
-let timer: ReturnType<typeof setTimeout> | null = null;
-let animationFrame: number | null = null;
+let animationFrame: number;
+let startTime: number | null = null;
 let finished = false;
 
-const runCycle = () => {
-  const cycle = currentCycle.value;
-  if (cycle >= maxCycles) {
+const animate = (timestamp: number) => {
+  if (!startTime) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+
+  // Update text based on elapsed time milestones
+  let cumulativeTime = 0;
+  let currentTextIndex = 0;
+  
+  for (let i = 0; i < milestones.length; i++) {
+    cumulativeTime += milestones[i];
+    if (elapsed < cumulativeTime) {
+      currentTextIndex = i;
+      break;
+    }
+    // If we passed the last milestone, we remain on the last index until total duration check
+    currentTextIndex = i; 
+  }
+  
+  if (currentTextIndex < textSequence.length) {
+    instruction.value = textSequence[currentTextIndex];
+  }
+
+  if (elapsed >= totalAnimationDuration) {
     if (!finished) {
       finished = true;
       instruction.value = finalText;
@@ -65,25 +95,8 @@ const runCycle = () => {
     return;
   }
 
-  if (cycle === 1) {
-    instruction.value = cycle1Text;
-  } else if (cycle === 2) {
-    instruction.value = cycle2Text;
-  }
-
-  currentCycle.value = cycle + 1;
-  timer = window.setTimeout(runCycle, cycleMs);
-};
-
-const animate = () => {
-  if (finished) return;
-  
-  // Linearly increase progress over the total duration (approx 3 cycles * cycleMs)
-  // We want to reach 1.0 by the time the text says "Gone"
-  const totalDuration = cycleMs * 3;
-  const increment = 16 / totalDuration; // 60fps approx
-  
-  cycleProgress.value = Math.min(1, cycleProgress.value + increment);
+  // Linear progress
+  cycleProgress.value = Math.min(1, elapsed / totalAnimationDuration);
   
   animationFrame = requestAnimationFrame(animate);
 };
@@ -103,15 +116,11 @@ onMounted(() => {
   // Delay 1 second before starting to let user adjust
   window.setTimeout(() => {
     animationsStarted.value = true;
-    runCycle();
-    animate();
+    requestAnimationFrame(animate);
   }, 1000);
 });
 
 onBeforeUnmount(() => {
-  if (timer) {
-    window.clearTimeout(timer);
-  }
   if (animationFrame) {
     cancelAnimationFrame(animationFrame);
   }
