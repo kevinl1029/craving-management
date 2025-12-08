@@ -42,6 +42,8 @@ const COLOR_GLOW = 'rgba(74, 157, 168, 0.4)';
 const currentRadius = ref(BASE_RADIUS);
 const targetRadius = ref(BASE_RADIUS);
 const currentIntensity = ref(props.intensity);
+// Track released amount visually (only updates during "exhale" bursts)
+const releaseDisplayProgress = ref(0);
 
 // Particles for release mode
 interface Particle {
@@ -84,8 +86,22 @@ const updateState = () => {
     const scale = currentIntensity.value / 100;
     targetRadius.value = BASE_RADIUS * scale;
   } else if (props.mode === 'release') {
-    // Shrink to 0 based on progress
-    targetRadius.value = BASE_RADIUS * 0.5 * (1 - props.progress);
+    // Only shrink when "exhaling" (particles releasing)
+    const releaseBreathCycle = Math.sin(time * 1.5);
+    const isExhaling = releaseBreathCycle < 0;
+    
+    // If we have progress to make up, do it during exhale
+    if (isExhaling && releaseDisplayProgress.value < props.progress) {
+      // Catch up speed proportional to the gap, but clamped
+      const diff = props.progress - releaseDisplayProgress.value;
+      releaseDisplayProgress.value += Math.min(diff, 0.005);
+    } else if (props.progress < releaseDisplayProgress.value) {
+      // Reset if props reset (e.g. restart)
+      releaseDisplayProgress.value = props.progress;
+    }
+    
+    // Shrink to 0 based on visualized progress
+    targetRadius.value = BASE_RADIUS * 0.5 * (1 - releaseDisplayProgress.value);
   } else {
     targetRadius.value = BASE_RADIUS;
   }
@@ -114,7 +130,17 @@ const drawOrb = (centerX: number, centerY: number) => {
     const breathing = Math.sin(time * 0.5) * 1.5; // Slower breathing
     
     // Intensity wobble (more intense = more wobble)
-    const wobbleFactor = props.mode === 'observe' ? (currentIntensity.value / 100) : 0.2;
+    // Align 'breathe' mode wobble with 'observe' by scaling with radius/intensity
+    let wobbleScale = 0.2;
+    if (props.mode === 'observe') {
+      wobbleScale = currentIntensity.value / 100;
+    } else if (props.mode === 'breathe') {
+      // Breathe mode is high scale (1.0-1.35), so match observe wobble levels
+      // Map 1.0->0.8, 1.35->1.35 approx
+      wobbleScale = (currentRadius.value / BASE_RADIUS); 
+    }
+    
+    const wobbleFactor = wobbleScale;
     const dynamicWobble = (noise1 + noise2) * wobbleFactor;
 
     const r = radius + dynamicWobble + breathing;

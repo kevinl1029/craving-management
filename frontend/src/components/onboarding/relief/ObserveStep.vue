@@ -46,69 +46,76 @@ const cycle5Text = scriptConfig.scenes[3]?.lines[0]?.text || "Now it's almost go
 const finalText = scriptConfig.scenes[4]?.lines[0]?.text || 'Notice how small and quiet it is now.';
 const finalDwellMs = scriptConfig.scenes[4]?.dwellMs || 2500;
 
-// Animation timing driven by script dwellMs (controls both text display and wave cycles)
-const cycleMs = scriptConfig.scenes[0]?.dwellMs || 5000;
-const maxCycles = 6;
-const startingBaseScale = 1.35;
-const endingBaseScale = 0.5;
-const initialAmplitude = 0.35;
-const bobPixels = 6;
+// Calculate total duration and milestones
+const milestones = [
+  scriptConfig.scenes[0]?.dwellMs || 5000,
+  scriptConfig.scenes[1]?.dwellMs || 5000,
+  scriptConfig.scenes[2]?.dwellMs || 5000,
+  scriptConfig.scenes[3]?.dwellMs || 5000,
+];
+const totalAnimationDuration = milestones.reduce((a, b) => a + b, 0); // ~20s before final text
 
-const currentScale = ref(startingBaseScale);
-const currentOffset = ref(0);
-const currentCycle = ref(0);
+const currentScale = ref(1.35); // Not strictly used for render anymore, but kept for logic if needed
 const instruction = ref(initialInstruction);
 const percentLeft = ref(135);
-const animationsStarted = ref(false);
 const hudVisible = ref(false);
 
-let timer: ReturnType<typeof setTimeout> | null = null;
+let animationFrame: number;
+let startTime: number | null = null;
 let finished = false;
 
-const getBaseScaleForCycle = (cycle: number) => {
-  if (cycle >= maxCycles) return endingBaseScale;
-  const t = cycle / (maxCycles - 1);
-  return startingBaseScale + t * (endingBaseScale - startingBaseScale);
-};
+const animate = (timestamp: number) => {
+  if (!startTime) startTime = timestamp;
+  const elapsed = timestamp - startTime;
+  
+  // Update text based on elapsed time milestones
+  if (elapsed < milestones[0]) {
+    instruction.value = initialInstruction;
+  } else if (elapsed < milestones[0] + milestones[1]) {
+    instruction.value = cycle1Text;
+  } else if (elapsed < milestones[0] + milestones[1] + milestones[2]) {
+    instruction.value = cycle3Text;
+  } else {
+    instruction.value = cycle5Text;
+  }
 
-const runCycle = () => {
-  const cycle = currentCycle.value;
-  if (cycle >= maxCycles) {
+  if (elapsed >= totalAnimationDuration) {
     if (!finished) {
       finished = true;
       instruction.value = finalText;
-      currentScale.value = endingBaseScale;
-      currentOffset.value = 0;
-      percentLeft.value = Math.round(endingBaseScale * 100);
+      percentLeft.value = 50; // Final resting state (0.5 scale)
       setTimeout(() => emit('complete'), finalDwellMs);
     }
     return;
   }
 
-  const baseScale = getBaseScaleForCycle(cycle);
-  const amplitudeDecay = Math.pow(0.8, cycle);
-  const thisAmplitude = initialAmplitude * amplitudeDecay;
-
-  percentLeft.value = Math.round(baseScale * 100);
-
-  currentScale.value = baseScale;
-  currentOffset.value = 0;
-
-  window.setTimeout(() => {
-    currentScale.value = baseScale - thisAmplitude;
-    currentOffset.value = bobPixels * amplitudeDecay;
-  }, cycleMs / 2);
-
-  if (cycle === 1) {
-    instruction.value = cycle1Text;
-  } else if (cycle === 3) {
-    instruction.value = cycle3Text;
-  } else if (cycle === 5) {
-    instruction.value = cycle5Text;
-  }
-
-  currentCycle.value = cycle + 1;
-  timer = window.setTimeout(runCycle, cycleMs);
+  // Calculate intensity (Sine wave superimposed on linear decay)
+  // "Up a bit, down further"
+  const progress = elapsed / totalAnimationDuration; // 0 to 1
+  
+  // Linear decay from 135 to 50
+  const startIntensity = 135;
+  const endIntensity = 50;
+  const linearDecay = startIntensity - (progress * (startIntensity - endIntensity));
+  
+  // Oscillation
+  // ~5s period (matching text changes roughly)
+  // Frequency: 2PI / 5000ms
+  const period = 5000;
+  const phase = (elapsed / period) * Math.PI * 2;
+  const oscillation = Math.sin(phase) * 10; // +/- 10 intensity points
+  
+  // Dampen oscillation towards the end? Maybe slightly.
+  const dampen = 1 - (progress * 0.5); // 1.0 -> 0.5
+  
+  let currentIntensity = linearDecay + (oscillation * dampen);
+  
+  // Clamp
+  if (currentIntensity < 50) currentIntensity = 50;
+  
+  percentLeft.value = Math.round(currentIntensity);
+  
+  animationFrame = requestAnimationFrame(animate);
 };
 
 // Sync local percentLeft to parent orb state
@@ -128,16 +135,15 @@ onMounted(() => {
     hudVisible.value = true;
   }, 200);
 
-  // Delay 1 second before starting pulsing to let user adjust
+  // Delay 1 second before starting animation to let user adjust
   window.setTimeout(() => {
-    animationsStarted.value = true;
-    runCycle();
+    requestAnimationFrame(animate);
   }, 1000);
 });
 
 onBeforeUnmount(() => {
-  if (timer) {
-    window.clearTimeout(timer);
+  if (animationFrame) {
+    cancelAnimationFrame(animationFrame);
   }
 });
 </script>
