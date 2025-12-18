@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeroOrb from './components/HeroOrb.vue';
 // No complex script needed for this static landing page for now
 // Navigation logic is handled via simple anchor links and window.location
 </script>
@@ -22,7 +23,9 @@
         </div>
         <div class="hero-visual">
           <div class="phone-mockup-placeholder">
-            <div class="orb-placeholder"></div>
+            <div class="orb-container">
+              <HeroOrb />
+            </div>
             <p>Ascend Companion</p>
           </div>
         </div>
@@ -219,12 +222,9 @@
   backdrop-filter: blur(5px);
 }
 
-.orb-placeholder {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--color-primary-start), transparent 70%);
-  opacity: 0.6;
+.orb-container {
+  width: 200px;
+  height: 200px;
   margin-bottom: 1rem;
 }
 
