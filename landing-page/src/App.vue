@@ -130,11 +130,38 @@ import HeroOrb from './components/HeroOrb.vue';
         </div>
       </div>
     </footer>
+
+    <!-- Mobile Sticky CTA -->
+    <div class="sticky-cta">
+      <a href="/session?stage=entry" class="btn btn-primary btn-block">Try Craving Relief</a>
+    </div>
   </main>
 </template>
 
 <style scoped>
 /* Component-specific overrides & layouts */
+
+/* Sticky CTA (Mobile Only) */
+.sticky-cta {
+  display: none; /* Hidden by default on desktop */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: rgba(4, 31, 33, 0.85);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-glass-border);
+  z-index: 100;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.btn-block {
+  display: flex;
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+}
 
 /* Typography */
 .hero-title {
@@ -356,6 +383,16 @@ import HeroOrb from './components/HeroOrb.vue';
     text-align: center;
   }
 
+  .sticky-cta {
+    display: block;
+    animation: slideUp 0.5s ease-out;
+  }
+  
+  /* Add padding to bottom of page so sticky CTA doesn't cover footer content */
+  .footer {
+    padding-bottom: 6rem;
+  }
+
   .hero-content {
     display: flex;
     flex-direction: column;
@@ -377,6 +414,11 @@ import HeroOrb from './components/HeroOrb.vue';
     max-width: 320px;
     gap: 1rem;
   }
+  
+  /* Hide the main Hero CTA on mobile since we have the sticky one */
+  .hero-actions .btn-primary {
+    display: none;
+  }
 
   .btn-secondary {
     margin-left: 0;
@@ -389,5 +431,10 @@ import HeroOrb from './components/HeroOrb.vue';
   .cta-title {
     font-size: 1.75rem;
   }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 </style>
