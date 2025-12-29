@@ -340,8 +340,8 @@ onMounted(() => {
 }
 
 .pricing-card {
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid var(--color-glass-border);
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   border-radius: 32px;
   max-width: 480px;
   margin: 0 auto;
@@ -350,6 +350,10 @@ onMounted(() => {
   position: relative;
   overflow: hidden;
   backdrop-filter: blur(10px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 60px rgba(252, 74, 26, 0.25),
+    0 0 100px rgba(247, 183, 51, 0.15);
 }
 
 .pricing-card::before {
