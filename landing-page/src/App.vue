@@ -1,145 +1,162 @@
 <script setup lang="ts">
-import HeroOrb from './components/HeroOrb.vue';
-// No complex script needed for this static landing page for now
-// Navigation logic is handled via simple anchor links and window.location
+import { onMounted } from 'vue';
+
+// Scroll-triggered animations
+onMounted(() => {
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, observerOptions);
+
+  document.querySelectorAll('.fade-in').forEach(el => {
+    observer.observe(el);
+  });
+});
 </script>
 
 <template>
   <main class="landing-page">
-    
-    <!-- 1. HERO SECTION -->
+
+    <!-- 1. HERO -->
     <section class="section hero">
-      <div class="container hero-layout">
+      <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">End Nicotine Cravings — <br class="desktop-only" />Starting Today</h1>
-          <p class="hero-subhead">
-            A calming experience that helps you ride out cravings and shows you a path to complete freedom.
-          </p>
+          <span class="hero-eyebrow">You're closer than you think</span>
+          <h1 class="hero-title">Become someone who <em>doesn't want</em> nicotine anymore</h1>
+          <p class="hero-subtitle">No white-knuckling. No counting days. Just the quiet relief of not wanting it anymore.</p>
           <div class="hero-actions">
-            <!-- Points to the main app's onboarding route -->
-            <a href="/session?stage=entry" class="btn btn-primary">Try Craving Relief</a>
-            <a href="#about" class="btn btn-secondary">Learn More</a>
+            <a href="#pricing" class="btn btn-primary">
+              I'm ready
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </a>
+            <p class="price-note"><strong>$49</strong> founding member price · 30-day guarantee</p>
           </div>
         </div>
-        <div class="hero-visual">
-          <div class="phone-mockup-placeholder">
-            <div class="orb-container">
-              <HeroOrb />
+      </div>
+    </section>
+
+    <div class="container"><div class="divider"></div></div>
+
+    <!-- 2. THE REAL REASON -->
+    <section class="section content-section fade-in">
+      <div class="container">
+        <h2 class="section-title">The real reason you're still hooked</h2>
+        <p class="section-text">You've tried before. Maybe patches, maybe cold turkey, maybe sheer force of will. And when it didn't stick, you blamed yourself.</p>
+        <p class="pull-quote">What keeps you reaching for it isn't physical. It's psychological.</p>
+        <p class="section-text">Nicotine's physical grip is weak. The withdrawal is mild—comparable to a slight hunger pang. But the beliefs feel unshakeable. That it relaxes you. That it helps you focus. That you'll always want it.</p>
+        <p class="section-text">These aren't truths. They're myths that nicotine taught you to believe. And once you see them clearly, they lose their power.</p>
+      </div>
+    </section>
+
+    <div class="container"><div class="divider"></div></div>
+
+    <!-- 3. THE ILLUSIONS -->
+    <section class="section content-section fade-in">
+      <div class="container">
+        <h2 class="section-title">6 illusions you're about to see through</h2>
+        <p class="section-text">Nicotine keeps its grip through illusions—beliefs that feel true until you really look at them. That it calms you down. That it helps you concentrate. That quitting means a lifetime of resisting.</p>
+        <p class="section-text">Over 5-7 days, we'll walk through each one together—in a conversation personalized to your life. Your triggers. The specific moments when you reach for it. The stories you've told yourself about why you need it.</p>
+        <p class="pull-quote">One by one, the illusions dissolve. And so does the wanting.</p>
+      </div>
+    </section>
+
+    <!-- 4. PRICING -->
+    <section id="pricing" class="section pricing-section fade-in">
+      <div class="container">
+        <div class="pricing-card">
+          <span class="founding-badge">Founding Member</span>
+          <h3 class="pricing-title">Freedom from nicotine</h3>
+
+          <div class="price">
+            <div class="price-amount"><sup>$</sup>49</div>
+          </div>
+          <p class="value-anchor">Less than a week of vaping, to never want it again.</p>
+
+          <div class="pricing-features">
+            <div class="pricing-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              <span>5-7 day guided experience, personalized to you</span>
             </div>
-            <p>Ascend Companion</p>
+            <div class="pricing-feature">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 6L9 17l-5-5"/>
+              </svg>
+              <span>Check-ins at 30, 60, and 90 days</span>
+            </div>
           </div>
+
+          <a href="/checkout" class="btn btn-primary btn-full">
+            Now I'm ready
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+
+          <p class="guarantee">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            30-day money-back guarantee. No questions asked.
+          </p>
         </div>
-      </div>
-    </section>
-
-    <!-- 2. WHAT ASCEND IS (Simple Summary Band) -->
-    <section class="section summary-band">
-      <div class="container">
-        <div class="summary-grid">
-          <div class="summary-item">
-            <h3>When a craving hits</h3>
-            <p>Ascend gives you a moment to breathe, settle, and feel more in control.</p>
-          </div>
-          <div class="summary-item">
-            <h3>As you calm down</h3>
-            <p>You'll start to see that the craving isn’t a monster — it’s just a sensation passing through.</p>
-          </div>
-          <div class="summary-item">
-            <h3>And the more you learn</h3>
-            <p>The more the desire itself begins to fade, until freedom feels completely natural.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 4. WHY ASCEND WORKS (Lightweight Credibility) -->
-    <section class="section benefits">
-      <div class="container">
-        <h2 class="section-title text-center">Why Ascend Works</h2>
-        <div class="benefits-grid">
-          <div class="benefit-card">
-            <h3>Understanding, not willpower</h3>
-            <p>Cravings fade when you see what they really are.</p>
-          </div>
-          <div class="benefit-card">
-            <h3>Behavioral science–aligned</h3>
-            <p>Urge surfing, reframing, and breath‑based calm.</p>
-          </div>
-          <div class="benefit-card">
-            <h3>Modern guidance</h3>
-            <p>Conversational AI that personalizes tone and pacing.</p>
-          </div>
-          <div class="benefit-card">
-            <h3>A proven philosophy</h3>
-            <p>Inspired by Easy Way principles of dissolving desire.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. ABOUT ASCEND (Company Trust) -->
-    <section id="about" class="section about">
-      <div class="container text-center">
-        <h2 class="section-title">About Ascend</h2>
-        <p class="about-text">
-          Ascend is a small, modern wellness studio focused on freeing people from nicotine. We combine behavioral science with calm, conversational experiences that help shift your mindset — gently and permanently.
-        </p>
-      </div>
-    </section>
-
-    <!-- 6. FAQ (Objection-Handling) -->
-    <section class="section faq">
-      <div class="container">
-        <h2 class="section-title text-center">Common Questions</h2>
-        <div class="faq-grid">
-          <div class="faq-item">
-            <h4>Does this work for vaping?</h4>
-            <p>Yes. Cravings follow the same pattern regardless of the source.</p>
-          </div>
-          <div class="faq-item">
-            <h4>Do I need an account?</h4>
-            <p>No signup required to try the relief session.</p>
-          </div>
-          <div class="faq-item">
-            <h4>Is this medical?</h4>
-            <p>Ascend offers behavioral guidance, not medical treatment.</p>
-          </div>
-          <div class="faq-item">
-            <h4>What happens after I try it?</h4>
-            <p>You get a preview of the Freedom Path and options to continue.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 7. FINAL CTA SECTION -->
-    <section class="section final-cta">
-      <div class="container text-center">
-        <h2 class="cta-title">Try Craving Relief — Right Now</h2>
-        <a href="/session?stage=entry" class="btn btn-primary btn-large">Start Free Session</a>
-        <p class="cta-subtext">No account. Works in under a minute.</p>
       </div>
     </section>
 
     <footer class="footer">
       <div class="container">
-        <p>&copy; {{ new Date().getFullYear() }} Ascend. All rights reserved.</p>
-        <div class="footer-links">
-          <a href="#">Terms</a>
-          <a href="#">Privacy</a>
-        </div>
+        <p>&copy; {{ new Date().getFullYear() }} Ascend. Built with care for people ready to be free.</p>
       </div>
     </footer>
 
     <!-- Mobile Sticky CTA -->
     <div class="sticky-cta">
-      <a href="/session?stage=entry" class="btn btn-primary btn-block">Try Craving Relief</a>
+      <a href="/checkout" class="btn btn-primary btn-block">
+        I'm ready
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </a>
     </div>
   </main>
 </template>
 
 <style scoped>
 /* Component-specific overrides & layouts */
+
+/* Animations */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s ease;
+}
+
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* Sticky CTA (Mobile Only) */
 .sticky-cta {
@@ -149,7 +166,7 @@ import HeroOrb from './components/HeroOrb.vue';
   left: 0;
   width: 100%;
   padding: 1rem 1.5rem;
-  background: rgba(4, 31, 33, 0.85);
+  background: rgba(4, 31, 33, 0.95);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--color-glass-border);
   z-index: 100;
@@ -161,27 +178,117 @@ import HeroOrb from './components/HeroOrb.vue';
   width: 100%;
   padding: 1rem;
   font-size: 1.1rem;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* Divider */
+.divider {
+  width: 60px;
+  height: 1px;
+  background: var(--color-glass-border);
+  margin: 0 auto;
 }
 
 /* Typography */
-.hero-title {
-  font-size: 2.75rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
+.hero {
+  padding: 80px 0 100px;
+  text-align: center;
 }
 
-.hero-subhead {
-  font-size: 1.125rem;
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-block;
+  color: var(--color-primary-end);
+  font-size: 0.9rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards 0.2s;
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  max-width: 800px;
+  margin: 0 auto 28px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards 0.4s;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--color-primary-end);
+}
+
+.hero-subtitle {
+  font-size: 1.2rem;
   color: var(--color-text-secondary);
-  margin-bottom: 2rem;
-  max-width: 480px;
+  max-width: 520px;
+  margin: 0 auto 48px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards 0.6s;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  opacity: 0;
+  animation: fadeUp 0.8s ease forwards 0.8s;
+}
+
+.price-note {
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+}
+
+.price-note strong {
+  color: var(--color-text-primary);
 }
 
 .section-title {
-  font-size: 2rem;
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
   font-weight: 600;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   color: var(--color-text-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+/* Content Sections */
+.content-section {
+  padding: 80px 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.section-text {
+  color: var(--color-text-secondary);
+  font-size: 1.1rem;
+  line-height: 1.8;
+  margin-bottom: 24px;
+}
+
+.pull-quote {
+  font-size: 1.75rem;
+  color: var(--color-primary-end);
+  line-height: 1.3;
+  margin: 48px 0;
+  text-align: center;
+  font-style: italic;
 }
 
 /* Buttons */
@@ -189,168 +296,154 @@ import HeroOrb from './components/HeroOrb.vue';
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.875rem 1.5rem;
+  gap: 10px;
+  padding: 18px 36px;
   border-radius: var(--radius-button);
+  font-size: 1.05rem;
   font-weight: 600;
-  transition: transform 0.2s ease, opacity 0.2s;
+  transition: all 0.3s ease;
   text-align: center;
+  border: none;
+  cursor: pointer;
 }
 
 .btn:hover {
-  transform: scale(1.02);
+  transform: translateY(-2px);
 }
 
 .btn-primary {
   background: linear-gradient(135deg, var(--color-primary-start), var(--color-primary-end));
   color: #fff;
-  box-shadow: 0 4px 12px rgba(252, 74, 26, 0.3);
+  box-shadow: 0 4px 24px rgba(252, 74, 26, 0.3);
 }
 
-.btn-secondary {
-  border: 1px solid var(--color-text-tertiary);
-  color: var(--color-text-secondary);
-  margin-left: 1rem;
+.btn-primary:hover {
+  box-shadow: 0 6px 32px rgba(252, 74, 26, 0.4);
 }
 
-.btn-secondary:hover {
-  color: #fff;
-  border-color: #fff;
+.btn-primary svg {
+  transition: transform 0.3s ease;
 }
 
-.btn-large {
-  font-size: 1.25rem;
-  padding: 1rem 2.5rem;
+.btn-primary:hover svg {
+  transform: translateX(4px);
 }
 
-/* Layouts */
-.hero-layout {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3rem;
-  align-items: center;
-}
-
-.hero-visual {
-  display: flex;
+.btn-full {
+  width: 100%;
   justify-content: center;
 }
 
-.phone-mockup-placeholder {
-  width: 280px;
-  height: 560px;
-  background: rgba(0,0,0,0.2);
+/* Pricing Section */
+.pricing-section {
+  padding: 80px 0 120px;
+}
+
+.pricing-card {
+  background: rgba(255, 255, 255, 0.03);
   border: 2px solid var(--color-glass-border);
-  border-radius: 40px;
+  border-radius: 32px;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 56px 48px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--color-primary-start), var(--color-primary-end));
+}
+
+.founding-badge {
+  display: inline-block;
+  background: rgba(247, 183, 51, 0.15);
+  color: var(--color-primary-end);
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 28px;
+}
+
+.pricing-title {
+  font-size: 2rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+  color: var(--color-text-primary);
+}
+
+.price {
+  margin-bottom: 12px;
+}
+
+.price-amount {
+  font-size: 4rem;
+  color: var(--color-text-primary);
+  line-height: 1;
+  font-weight: 700;
+}
+
+.price-amount sup {
+  font-size: 1.5rem;
+  vertical-align: super;
+  margin-right: 2px;
+}
+
+.value-anchor {
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  margin-bottom: 32px;
+}
+
+.pricing-features {
+  text-align: left;
+  margin-bottom: 36px;
+}
+
+.pricing-feature {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  color: var(--color-text-tertiary);
-  backdrop-filter: blur(5px);
-}
-
-.orb-container {
-  width: 200px;
-  height: 200px;
-  margin-bottom: 1rem;
-}
-
-/* Summary Band */
-.summary-band {
-  background: var(--color-glass-bg);
-  border-top: 1px solid var(--color-glass-border);
+  gap: 14px;
+  padding: 12px 0;
   border-bottom: 1px solid var(--color-glass-border);
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2rem;
+.pricing-feature:last-child {
+  border-bottom: none;
 }
 
-.summary-item h3 {
+.pricing-feature svg {
   color: var(--color-primary-end);
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  flex-shrink: 0;
 }
 
-.summary-item p {
-  color: var(--color-text-secondary);
-}
-
-/* Benefits Grid */
-.benefits-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 2rem;
-}
-
-.benefit-card {
-  background: rgba(255, 255, 255, 0.03);
-  padding: 2rem;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--color-glass-border);
-}
-
-.benefit-card h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.75rem;
-  color: #fff;
-}
-
-.benefit-card p {
-  color: var(--color-text-tertiary);
+.pricing-feature span {
   font-size: 0.95rem;
-}
-
-/* About */
-.about-text {
-  max-width: 700px;
-  margin: 0 auto;
-  font-size: 1.25rem;
   color: var(--color-text-secondary);
-  line-height: 1.8;
 }
 
-/* FAQ */
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2rem;
-}
-
-.faq-item {
-  padding: 1.5rem;
-  background: rgba(0,0,0,0.1);
-  border-radius: 16px;
-}
-
-.faq-item h4 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: #fff;
-}
-
-.faq-item p {
-  color: var(--color-text-tertiary);
-}
-
-/* Final CTA */
-.final-cta {
-  padding: 6rem 0;
-}
-
-.cta-title {
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
-}
-
-.cta-subtext {
-  margin-top: 1.5rem;
-  color: var(--color-text-tertiary);
+.guarantee {
+  margin-top: 20px;
+  color: var(--color-text-secondary);
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.guarantee svg {
+  color: var(--color-primary-end);
 }
 
 /* Footer */
@@ -359,77 +452,51 @@ import HeroOrb from './components/HeroOrb.vue';
   border-top: 1px solid var(--color-glass-border);
   color: var(--color-text-tertiary);
   font-size: 0.85rem;
-}
-
-.footer .container {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-links {
-  display: flex;
-  gap: 1.5rem;
-}
-
-.footer-links a:hover {
-  color: #fff;
+  text-align: center;
 }
 
 /* Mobile Responsive */
 @media (max-width: 768px) {
-  .hero-layout {
-    grid-template-columns: 1fr;
-    text-align: center;
-  }
-
   .sticky-cta {
     display: block;
     animation: slideUp 0.5s ease-out;
   }
-  
+
   /* Add padding to bottom of page so sticky CTA doesn't cover footer content */
   .footer {
     padding-bottom: 6rem;
   }
 
-  .hero-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .desktop-only {
-    display: none;
+  .hero {
+    padding: 60px 0 80px;
   }
 
   .hero-title {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 
-  .hero-actions {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    max-width: 320px;
-    gap: 1rem;
-  }
-  
-  /* Hide the main Hero CTA on mobile since we have the sticky one */
-  .hero-actions .btn-primary {
-    display: none;
-  }
-
-  .btn-secondary {
-    margin-left: 0;
-  }
-  
-  .faq-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .cta-title {
+  .section-title {
     font-size: 1.75rem;
+  }
+
+  .section-text {
+    font-size: 1rem;
+  }
+
+  .pull-quote {
+    font-size: 1.5rem;
+  }
+
+  .pricing-card {
+    padding: 40px 28px;
+  }
+
+  .price-amount {
+    font-size: 3rem;
+  }
+
+  .content-section {
+    padding: 60px 0;
   }
 }
 
