@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
+const showStickyCta = ref(false);
 
 // Scroll-triggered animations
 onMounted(() => {
@@ -19,6 +21,36 @@ onMounted(() => {
   document.querySelectorAll('.fade-in').forEach(el => {
     observer.observe(el);
   });
+
+  // Smart sticky CTA behavior
+  const heroSection = document.querySelector('.hero');
+  const pricingSection = document.querySelector('.pricing-section');
+
+  const ctaObserverOptions = {
+    threshold: 0.2, // Trigger when 20% of section is visible
+    rootMargin: '0px'
+  };
+
+  const ctaObserver = new IntersectionObserver((entries) => {
+    let heroVisible = false;
+    let pricingVisible = false;
+
+    entries.forEach(entry => {
+      if (entry.target.classList.contains('hero')) {
+        heroVisible = entry.isIntersecting;
+      }
+      if (entry.target.classList.contains('pricing-section')) {
+        pricingVisible = entry.isIntersecting;
+      }
+    });
+
+    // Hide sticky CTA when hero or pricing section is visible
+    // Show it when scrolling through middle content
+    showStickyCta.value = !heroVisible && !pricingVisible;
+  }, ctaObserverOptions);
+
+  if (heroSection) ctaObserver.observe(heroSection);
+  if (pricingSection) ctaObserver.observe(pricingSection);
 });
 </script>
 
@@ -39,7 +71,7 @@ onMounted(() => {
                 <path d="M5 12h14M12 5l7 7-7 7"/>
               </svg>
             </a>
-            <p class="price-note"><strong>$49</strong> founding member price · 30-day guarantee</p>
+            <p class="price-note"><strong>$199</strong> founding member price · 30-day guarantee</p>
           </div>
         </div>
       </div>
@@ -78,9 +110,9 @@ onMounted(() => {
           <h3 class="pricing-title">Freedom from nicotine</h3>
 
           <div class="price">
-            <div class="price-amount"><sup>$</sup>49</div>
+            <div class="price-amount"><sup>$</sup>199</div>
           </div>
-          <p class="value-anchor">Less than a week of vaping, to never want it again.</p>
+          <p class="value-anchor">Less than a month of vaping, to never want it again.</p>
 
           <div class="pricing-features">
             <div class="pricing-feature">
@@ -121,7 +153,7 @@ onMounted(() => {
     </footer>
 
     <!-- Mobile Sticky CTA -->
-    <div class="sticky-cta">
+    <div class="sticky-cta" :class="{ 'visible': showStickyCta }">
       <a href="/checkout" class="btn btn-primary btn-block">
         I'm ready
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -171,6 +203,19 @@ onMounted(() => {
   border-top: 1px solid var(--color-glass-border);
   z-index: 100;
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+
+  /* Smooth transitions for elegant show/hide */
+  transform: translateY(100%);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.4, 0.0, 0.2, 1),
+              opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.sticky-cta.visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .btn-block {
@@ -463,7 +508,6 @@ onMounted(() => {
 @media (max-width: 768px) {
   .sticky-cta {
     display: block;
-    animation: slideUp 0.5s ease-out;
   }
 
   /* Add padding to bottom of page so sticky CTA doesn't cover footer content */
@@ -502,10 +546,5 @@ onMounted(() => {
   .content-section {
     padding: 60px 0;
   }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); }
-  to { transform: translateY(0); }
 }
 </style>
