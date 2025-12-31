@@ -148,7 +148,7 @@ onMounted(() => {
 
     <footer class="footer">
       <div class="container">
-        <p>&copy; {{ new Date().getFullYear() }} Ascend. Built with care for people ready to be free.</p>
+        <p>&copy; {{ new Date().getFullYear() }} Unhooked. Built with care for people ready to be free.</p>
       </div>
     </footer>
 
