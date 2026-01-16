@@ -204,7 +204,7 @@ const faqItems = [
       <div class="container content-container">
         <div class="centered-statement">
           <p>This isn't an app that tracks your cravings.</p>
-          <p class="emphasis">It's a conversation.</p>
+          <p class="emphasis">It's a conversation to change your belief.</p>
         </div>
 
         <p class="section-text">Over about two weeks, you'll talk through the beliefs that keep nicotine in control—personalized to your life, your triggers, the specific moments when you reach for it.</p>
@@ -218,10 +218,10 @@ const faqItems = [
 
         <p class="section-text">And somewhere along the way, the wanting quiets down. Not because you're fighting it. Because there's nothing left to want.</p>
 
-        <p class="pull-quote">You won't quit nicotine. You'll just... stop wanting it.</p>
+        <p class="pull-quote">You won't quit nicotine.<br>You'll stop wanting it.</p>
 
         <div class="whats-included">
-          <p class="included-item">✓ Voice conversations personalized to you, over ~2 weeks</p>
+          <p class="included-item">✓ Voice conversations hyper-personalized to you, over ~2 weeks</p>
           <p class="included-item">✓ Brief daily check-ins between sessions</p>
           <p class="included-item">✓ A final session that marks the moment you're free</p>
           <p class="included-item">✓ Follow-up support at 30, 60, and 90 days</p>
@@ -245,7 +245,7 @@ const faqItems = [
         <div class="qualification-break"></div>
 
         <div class="stacked-lines qualifications">
-          <p class="stacked-line">But if you've built a life you're proud of—a career, a family, something real—and nicotine feels like the one thing that doesn't fit anymore...</p>
+          <p class="stacked-line">But if you've built a life you're proud of—a career, a family, something real—and nicotine feels like the one thing that puts it all at risk...</p>
           <p class="stacked-line">If you're tired of stepping away from the table, the meeting, the moment to get your fix...</p>
           <p class="stacked-line">If you've tried willpower and want to understand why it never stuck...</p>
         </div>
