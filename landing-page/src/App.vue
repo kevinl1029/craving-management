@@ -1,19 +1,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
-import { trackCtaClick, trackPricingView, trackCheckoutIntent } from './analytics/posthog';
 
 const showStickyCta = ref(false);
 const expandedFaq = ref<number | null>(null);
 const email = ref('');
 
-// Track CTA clicks with analytics
-function handleCtaClick(ctaName: string, destination: string) {
-  trackCtaClick(ctaName, destination);
-
-  // Track checkout intent for /checkout links
-  if (destination === '/checkout') {
-    trackCheckoutIntent();
-  }
+// Handle CTA clicks (analytics can be added later)
+function handleCtaClick(_ctaName: string, _destination: string) {
+  // TODO: Add analytics tracking when ready
 }
 
 // Toggle FAQ accordion
@@ -111,18 +105,6 @@ onMounted(() => {
   if (pricingSection) ctaObserver.observe(pricingSection);
   if (finalCtaSection) ctaObserver.observe(finalCtaSection);
 
-  // Track when pricing section comes into view
-  let pricingTracked = false;
-  const pricingObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !pricingTracked) {
-        pricingTracked = true;
-        trackPricingView();
-      }
-    });
-  }, { threshold: 0.5 });
-
-  if (pricingSection) pricingObserver.observe(pricingSection);
 });
 
 const faqItems = [
